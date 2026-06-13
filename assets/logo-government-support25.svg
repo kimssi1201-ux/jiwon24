@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="96" viewBox="0 0 320 96" role="img" aria-labelledby="title desc">
+  <title id="title">정부지원금25 로고</title>
+  <desc id="desc">파란 25 마크와 정부지원금25 텍스트 로고</desc>
+  <rect width="320" height="96" rx="18" fill="#ffffff"/>
+  <rect x="16" y="16" width="64" height="64" rx="14" fill="#2563eb"/>
+  <path d="M28 34h22c8 0 14 5 14 13 0 6-3 10-9 14l-12 8h22v9H27v-7l20-14c5-3 7-6 7-10 0-3-2-5-6-5H28v-8z" fill="#ffffff"/>
+  <path d="M59 31h19v9H66l-1 8c2-1 5-2 8-2 9 0 16 6 16 15 0 10-8 17-19 17-7 0-13-2-18-7l6-7c3 3 7 5 12 5 5 0 9-3 9-8s-4-8-10-8c-4 0-7 1-10 3l-6-4 3-21z" fill="#dbeafe"/>
+  <text x="96" y="47" fill="#111827" font-family="Pretendard, Arial, sans-serif" font-size="25" font-weight="800">정부지원금25</text>
+  <text x="98" y="70" fill="#64748b" font-family="Pretendard, Arial, sans-serif" font-size="13" font-weight="700">공공데이터 기반 정책 검색</text>
+</svg>

@@ -5,6 +5,7 @@
   const dataDateLabel = document.querySelector("#dataDateLabel");
   const SITE_NAME = "지원금 올데이";
   const OLD_NAMES = ["정부지원금25", "지원금25"];
+  const policySnapshotKey = "GG24_LAST_POLICY_DETAIL";
 
   function applySiteName() {
     document.querySelectorAll(".brand-copy strong, .site-footer strong").forEach((element) => {
@@ -98,6 +99,22 @@
     }
   }
 
+  function rememberPolicySnapshot(policy) {
+    if (!policy?.id) return;
+    try {
+      sessionStorage.setItem(
+        policySnapshotKey,
+        JSON.stringify({
+          id: policy.id,
+          savedAt: Date.now(),
+          policy,
+        }),
+      );
+    } catch {
+      // Detail pages can still fall back to API lookup.
+    }
+  }
+
   function daysUntil(policy) {
     const deadline = policy?.deadline || "";
     if (!/^\d{4}-\d{2}-\d{2}$/.test(deadline)) return null;
@@ -176,10 +193,25 @@
       .map((item) => item.policy);
   }
 
+  function bindSnapshotLinks(urgent) {
+    list.querySelectorAll('a[href*="policy.html?id="]').forEach((link) => {
+      link.addEventListener("click", () => {
+        try {
+          const id = new URL(link.getAttribute("href"), location.href).searchParams.get("id");
+          const policy = urgent.find((item) => item.id === id);
+          if (policy) rememberPolicySnapshot(policy);
+        } catch {
+          // The link still navigates normally.
+        }
+      });
+    });
+  }
+
   function render(policies) {
     const urgent = urgentPolicies(Array.isArray(policies) ? policies : []);
     section.hidden = urgent.length === 0;
     list.innerHTML = urgent.map(policyCard).join("");
+    bindSnapshotLinks(urgent);
     if (label && urgent.length) {
       label.textContent = `${URGENT_WINDOW_DAYS}일 이내 마감 ${money.format(urgent.length)}개 먼저 보기`;
     }

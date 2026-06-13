@@ -1,0 +1,17 @@
+{
+  "name": "정부지원금25 - 당신이 찾는 모든 지원금",
+  "short_name": "지원금25",
+  "description": "지원금, 환급금, 정책 대출을 한 화면에서 찾는 정책 큐레이션 사이트",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f4f7f8",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "assets/icon-government-support25.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

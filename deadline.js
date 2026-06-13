@@ -2,6 +2,11 @@
   const section = document.querySelector("#urgentPoliciesSection");
   const list = document.querySelector("#urgentPolicies");
   const label = document.querySelector("#urgentPolicyLabel");
+  const dataDateLabel = document.querySelector("#dataDateLabel");
+  if (dataDateLabel) {
+    dataDateLabel.textContent = "";
+    dataDateLabel.hidden = true;
+  }
   if (!section || !list) return;
 
   const URGENT_WINDOW_DAYS = 3;

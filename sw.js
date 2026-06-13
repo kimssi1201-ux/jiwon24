@@ -1,4 +1,4 @@
-const CACHE_NAME = "gov-support25-site-v7";
+const CACHE_NAME = "gov-support25-site-v8";
 const ASSETS = [
   "./",
   "./index.html",

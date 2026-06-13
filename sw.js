@@ -1,4 +1,4 @@
-const CACHE_NAME = "gov-support25-site-v20";
+const CACHE_NAME = "gov-support25-site-v21";
 const ASSETS = [
   "./",
   "./index.html",
@@ -12,6 +12,16 @@ const ASSETS = [
   "./manifest.webmanifest",
   "./assets/claim-desk-hero.svg",
   "./assets/hero-phone-main.jpg?v=1",
+  "./assets/hero-phone-hq-loader.js?v=1",
+  "./assets/hero-phone-hq-01.txt?v=1",
+  "./assets/hero-phone-hq-02.txt?v=1",
+  "./assets/hero-phone-hq-03.txt?v=1",
+  "./assets/hero-phone-hq-04.txt?v=1",
+  "./assets/hero-phone-hq-05.txt?v=1",
+  "./assets/hero-phone-hq-06.txt?v=1",
+  "./assets/hero-phone-hq-07.txt?v=1",
+  "./assets/hero-phone-hq-08.txt?v=1",
+  "./assets/hero-phone-hq-09.txt?v=1",
   "./assets/illustration-support.svg",
   "./assets/illustration-refund.svg",
   "./assets/illustration-loan.svg",

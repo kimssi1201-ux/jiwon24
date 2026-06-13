@@ -6,6 +6,7 @@
   let renderedPolicy = null;
   const staticPolicies = Array.isArray(window.GG24_DATA?.policies) ? window.GG24_DATA.policies : [];
   const chunkStarts = [1, 6, 11, 16, 21, 26, 31, 36];
+  const policySnapshotKey = "GG24_LAST_POLICY_DETAIL";
 
   function escapeHtml(value) {
     return String(value ?? "")
@@ -129,6 +130,18 @@
     setTimeout(() => observer.disconnect(), 25000);
   }
 
+  function renderSnapshotPolicy() {
+    try {
+      const snapshot = JSON.parse(sessionStorage.getItem(policySnapshotKey) || "null");
+      if (!snapshot?.policy || snapshot.id !== requestedId || snapshot.policy.id !== requestedId) return false;
+      renderPolicy(snapshot.policy);
+      keepRenderedIfOverwritten();
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   function renderStaticPolicy() {
     const staticPolicy = staticPolicies.find((item) => item.id === requestedId);
     if (!staticPolicy) return false;
@@ -164,7 +177,7 @@
         }
       }
     } catch {
-      // The main detail renderer keeps the existing fallback message.
+      // The existing snapshot/static render remains visible when the API is unavailable.
     }
 
     if (!renderedPolicy) {
@@ -172,6 +185,6 @@
     }
   }
 
-  renderStaticPolicy();
+  renderSnapshotPolicy() || renderStaticPolicy();
   loadRequestedPolicy();
 })();

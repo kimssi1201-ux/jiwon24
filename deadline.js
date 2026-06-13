@@ -4,6 +4,8 @@
   const label = document.querySelector("#urgentPolicyLabel");
   if (!section || !list) return;
 
+  const URGENT_WINDOW_DAYS = 45;
+  const URGENT_LIMIT = 4;
   const money = new Intl.NumberFormat("ko-KR");
   const today = new Date();
 
@@ -94,10 +96,10 @@
     `;
   }
 
-  function urgentPolicies(policies, limit = 4) {
+  function urgentPolicies(policies, limit = URGENT_LIMIT) {
     return policies
       .map((policy) => ({ policy, diff: daysUntil(policy) }))
-      .filter((item) => item.diff !== null && item.diff >= 0 && item.diff <= 45)
+      .filter((item) => item.diff !== null && item.diff >= 0 && item.diff <= URGENT_WINDOW_DAYS)
       .sort((a, b) => a.diff - b.diff || (b.policy.views || 0) - (a.policy.views || 0))
       .slice(0, limit)
       .map((item) => item.policy);
@@ -108,14 +110,14 @@
     section.hidden = urgent.length === 0;
     list.innerHTML = urgent.map(policyCard).join("");
     if (label && urgent.length) {
-      label.textContent = `45일 이내 마감 ${money.format(urgent.length)}개 먼저 보기`;
+      label.textContent = `${URGENT_WINDOW_DAYS}일 이내 마감 ${money.format(urgent.length)}개 먼저 보기`;
     }
   }
 
   const initialPolicies = window.GG24_DATA?.policies || [];
   render(initialPolicies);
 
-  fetch("/api/policies?pages=6&perPage=500&maxItems=3000", {
+  fetch("/api/policies?pages=20&perPage=500&maxItems=10000", {
     headers: { Accept: "application/json" },
     cache: "no-store",
   })

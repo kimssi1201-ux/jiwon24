@@ -199,7 +199,11 @@
       const regionMatch = matchesRegion(policy, region);
       const ageMatch = age === "전체연령" || policyAgeGroups(policy).includes(age);
       const targetMatch = target === "전체대상" || policyTargetGroups(policy).includes(target);
-      const queryMatch = !query || policySearchText(policy).includes(query);
+      const queryMatch =
+        !query ||
+        (typeof policyMatchesQuery === "function"
+          ? policyMatchesQuery(policy, filters.query)
+          : policySearchText(policy).includes(query));
       return typeMatch && regionMatch && ageMatch && targetMatch && queryMatch;
     });
 

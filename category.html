@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="지원금, 환급금, 정책 대출 정보를 조건별로 검색하고 비교하세요." />
+    <meta name="theme-color" content="#2563eb" />
+    <link rel="icon" href="assets/icon-government-support25.svg" type="image/svg+xml" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="stylesheet" href="styles.css" />
+    <title>정책 검색 - 정부지원금25</title>
+  </head>
+  <body data-page="category">
+    <div class="promo-bar"><span>공공데이터 기반 정책 정보를 한곳에서 확인하세요.</span><a href="category.html">정책 보기</a></div>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="index.html"><span class="brand-mark">25</span><span class="brand-copy"><strong>정부지원금25</strong><small>공공데이터 기반 정책 검색</small></span></a>
+        <span class="trust-badge">공식 원문 연결</span>
+        <nav class="desktop-nav" aria-label="주요 메뉴">
+          <a href="category.html?type=지원금">지원금</a>
+          <a href="category.html?type=환급금">환급금</a>
+          <a href="category.html?type=대출">대출</a>
+        </nav>
+        <form class="site-search" id="siteSearch" role="search">
+          <label class="sr-only" for="globalSearch">검색</label>
+          <input id="globalSearch" type="search" placeholder="근로장려금, 디딤돌대출, 환급금" />
+          <button type="submit" aria-label="검색">⌕</button>
+        </form>
+      </div>
+    </header>
+
+    <main class="site-main">
+      <div class="page-stack">
+        <section class="category-hero section-card">
+          <p class="eyebrow">정책 검색</p>
+          <h1 id="categoryTitle">정책 전체</h1>
+          <p id="categoryCount">0개 결과</p>
+          <div class="filter-row" aria-label="정책 유형">
+            <a href="category.html" data-type-filter="전체">전체</a>
+            <a href="category.html?type=지원금" data-type-filter="지원금">지원금</a>
+            <a href="category.html?type=환급금" data-type-filter="환급금">환급금</a>
+            <a href="category.html?type=대출" data-type-filter="대출">대출</a>
+          </div>
+          <div class="region-filter">
+            <span>지역별 보기</span>
+            <div class="filter-row" id="regionFilter" aria-label="지역"></div>
+          </div>
+          <div class="region-filter">
+            <span>나이대별 보기</span>
+            <div class="filter-row" id="ageFilter" aria-label="나이대"></div>
+          </div>
+          <div class="region-filter">
+            <span>대상별 보기</span>
+            <div class="filter-row" id="targetFilter" aria-label="대상"></div>
+          </div>
+          <form class="search-box" id="categorySearch" role="search">
+            <label class="sr-only" for="categorySearchInput">정책 검색</label>
+            <input id="categorySearchInput" type="search" placeholder="검색어를 입력하세요" />
+            <button type="submit" aria-label="검색">⌕</button>
+          </form>
+        </section>
+
+        <section class="section">
+          <p class="result-notice" id="resultNotice"></p>
+          <div class="policy-list full-list" id="policyList"></div>
+        </section>
+      </div>
+    </main>
+
+    <nav class="bottom-nav" aria-label="하단 메뉴">
+      <a href="index.html"><span class="nav-dot nav-home"></span><span>홈</span></a>
+      <a class="active" href="category.html"><span class="nav-dot nav-doc"></span><span>맞춤 정책</span></a>
+    </nav>
+
+    <footer class="site-footer">
+      <strong>정부지원금25</strong>
+      <p>정책 정보는 참고용이며 실제 신청 전 해당 기관의 최신 공고를 확인해야 합니다.</p>
+      <div class="footer-links"><a href="about.html">회사소개</a><a href="terms.html">이용약관</a><a href="privacy.html">개인정보처리방침</a></div>
+    </footer>
+    <div class="toast" id="toast" role="status" hidden></div>
+    <script src="site-data.js"></script>
+    <script src="site.js"></script>
+  </body>
+</html>

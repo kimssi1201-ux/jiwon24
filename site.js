@@ -1,5 +1,5 @@
-const data = window.GG24_DATA || { policies: [] };
-const policies = Array.isArray(data.policies) ? data.policies : [];
+let data = window.GG24_DATA || { policies: [] };
+let policies = Array.isArray(data.policies) ? data.policies : [];
 const page = document.body.dataset.page;
 const params = new URLSearchParams(location.search);
 const money = new Intl.NumberFormat("ko-KR");
@@ -235,6 +235,26 @@ function bindCommonActions() {
   }
 }
 
+async function loadLivePolicies() {
+  if (!["home", "category", "policy"].includes(page)) return;
+
+  try {
+    const response = await fetch("/api/policies", {
+      headers: {
+        Accept: "application/json",
+      },
+      cache: "no-store",
+    });
+    if (!response.ok) return;
+    const liveData = await response.json();
+    if (!Array.isArray(liveData.policies) || !liveData.policies.length) return;
+    data = liveData;
+    policies = liveData.policies;
+  } catch {
+    // Local static previews keep using site-data.js when Cloudflare Functions are unavailable.
+  }
+}
+
 function renderHome() {
   const dateLabel = qs("#dataDateLabel");
   if (dateLabel) dateLabel.textContent = formatDataDate();
@@ -388,7 +408,8 @@ function renderPolicyDetail() {
   `;
 }
 
-function init() {
+async function init() {
+  await loadLivePolicies();
   if (page === "home") renderHome();
   if (page === "category") renderCategory();
   if (page === "policy") renderPolicyDetail();

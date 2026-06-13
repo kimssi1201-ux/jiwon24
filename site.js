@@ -221,10 +221,6 @@ function bindCommonActions() {
     button.addEventListener("click", () => showToast("공식 원문에서 신청 경로를 확인해 주세요."));
   });
 
-  qsa("[data-store]").forEach((button) => {
-    button.addEventListener("click", () => showToast("앱 스토어 연결 준비 중입니다."));
-  });
-
   const search = qs("#siteSearch");
   if (search) {
     search.addEventListener("submit", (event) => {
@@ -383,7 +379,7 @@ function renderPolicyDetail({ allowFallback = true, missingText = "정책 정보
     : `<button class="primary-button" type="button" data-apply>지원하기</button>`;
   const tags = Array.isArray(policy.tags) ? policy.tags : [];
 
-  document.title = `${policy.title} - 정부지원금25`;
+  document.title = `${policy.title} - 지원금 올데이`;
   qs("#policyDetail").innerHTML = `
     <div class="detail-head">
       <div class="meta-row">

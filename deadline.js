@@ -33,6 +33,10 @@
         background: #fee2e2;
         color: #b91c1c;
       }
+
+      body[data-page="home"] .site-search {
+        display: none !important;
+      }
     `;
     document.head.appendChild(style);
   }

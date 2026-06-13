@@ -235,6 +235,16 @@ function bindCommonActions() {
   }
 }
 
+function showCategoryLoading() {
+  if (page !== "category") return;
+  const count = qs("#categoryCount");
+  const list = qs("#policyList");
+  const notice = qs("#resultNotice");
+  if (count) count.textContent = "불러오는 중";
+  if (notice) notice.textContent = "";
+  if (list) list.innerHTML = `<div class="empty-card">최신 정책 정보를 불러오고 있습니다.</div>`;
+}
+
 async function loadLivePolicies() {
   if (!["home", "category", "policy"].includes(page)) return;
 
@@ -247,11 +257,13 @@ async function loadLivePolicies() {
     });
     if (!response.ok) return;
     const liveData = await response.json();
-    if (!Array.isArray(liveData.policies) || !liveData.policies.length) return;
+    if (!Array.isArray(liveData.policies) || !liveData.policies.length) return false;
     data = liveData;
     policies = liveData.policies;
+    return true;
   } catch {
     // Local static previews keep using site-data.js when Cloudflare Functions are unavailable.
+    return false;
   }
 }
 
@@ -331,11 +343,11 @@ function renderCategory() {
     ? visibleList.map(policyCard).join("")
     : `<div class="empty-card">조건에 맞는 정책이 없습니다. 지역이나 검색어를 넓혀보세요.</div>`;
 
-  qs("#categorySearch").addEventListener("submit", (event) => {
+  qs("#categorySearch").onsubmit = (event) => {
     event.preventDefault();
     const input = qs("#categorySearchInput").value.trim();
     location.href = categoryUrl({ type, region, age, target, query: input });
-  });
+  };
 }
 
 function detailRow(label, value) {
@@ -408,16 +420,28 @@ function renderPolicyDetail() {
   `;
 }
 
-async function init() {
-  await loadLivePolicies();
-  if (page === "home") renderHome();
-  if (page === "category") renderCategory();
-  if (page === "policy") renderPolicyDetail();
-  bindCommonActions();
-
+function registerServiceWorker() {
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("sw.js").catch(() => {});
   }
+}
+
+async function init() {
+  if (page === "category") {
+    renderCategory();
+    bindCommonActions();
+    loadLivePolicies().then((updated) => {
+      if (updated) renderCategory();
+    });
+    registerServiceWorker();
+    return;
+  }
+
+  await loadLivePolicies();
+  if (page === "home") renderHome();
+  if (page === "policy") renderPolicyDetail();
+  bindCommonActions();
+  registerServiceWorker();
 }
 
 init();

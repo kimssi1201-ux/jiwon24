@@ -5,7 +5,7 @@
     서울: ["서울", "서울특별시"],
     경기: ["경기", "경기도", "수원", "성남", "고양", "용인", "부천", "화성", "남양주", "안양", "평택", "파주", "김포", "광명"],
     인천: ["인천", "인천광역시"],
-    부산: ["부산", "부산광역시"],
+    부산: ["부산", "부산광역시", "해운대", "해운대구"],
     대구: ["대구", "대구광역시"],
     광주: ["광주", "광주광역시"],
     대전: ["대전", "대전광역시"],
@@ -58,6 +58,28 @@
 
   function isNationalPolicy(policy) {
     return String(policy?.region || "").includes("전국");
+  }
+
+  function policyRegion(policy) {
+    return String(policy?.region || "").trim();
+  }
+
+  function preciseAliasMatch(source, alias) {
+    const text = String(source || "");
+    if (!alias) return false;
+    if (alias.length >= 4) return text.includes(alias);
+
+    const escaped = alias.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const pattern = new RegExp(`(^|[^가-힣])${escaped}($|[^가-힣])|${escaped}(광역시|특별시|특별자치시|특별자치도|자치도|도|시|군|구)`);
+    return pattern.test(text);
+  }
+
+  function hasConflictingLocalRegion(policy, selectedRegion) {
+    const source = regionSource(policy);
+    return Object.keys(regionAliases).some((region) => {
+      if (region === selectedRegion) return false;
+      return aliasesFor(region).some((alias) => preciseAliasMatch(source, alias));
+    });
   }
 
   function compactFilterValue(value) {
@@ -148,17 +170,21 @@
   function matchesRegion(policy, region) {
     if (region === "전체지역") return true;
     if (region === "전국") return isNationalPolicy(policy);
+    if (hasConflictingLocalRegion(policy, region)) return false;
     if (isNationalPolicy(policy)) return true;
 
+    const explicitRegion = policyRegion(policy);
+    if (explicitRegion) return explicitRegion === region;
+
     const source = regionSource(policy);
-    return aliasesFor(region).some((alias) => source.includes(alias));
+    return aliasesFor(region).some((alias) => preciseAliasMatch(source, alias));
   }
 
   function regionPriority(policy, region) {
     if (region === "전체지역" || region === "전국") return 0;
     if (isNationalPolicy(policy)) return 1;
     const source = regionSource(policy);
-    if (aliasesFor(region).some((alias) => source.includes(alias))) return 0;
+    if (policyRegion(policy) === region || aliasesFor(region).some((alias) => preciseAliasMatch(source, alias))) return 0;
     return 2;
   }
 

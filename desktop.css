@@ -1,0 +1,131 @@
+@media (min-width: 760px) {
+  .site-main {
+    padding: 22px 18px 48px;
+  }
+
+  .bottom-nav {
+    display: none;
+  }
+
+  .hero-layout {
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 18px;
+  }
+
+  .hero-card {
+    display: grid;
+    grid-template-columns: minmax(0, 0.95fr) minmax(360px, 0.75fr);
+    min-height: 360px;
+  }
+
+  .hero-copy {
+    align-content: center;
+    padding: 34px;
+  }
+
+  .hero-copy h1 {
+    font-size: 46px;
+  }
+
+  .hero-media,
+  .hero-media img {
+    min-height: 360px;
+  }
+
+  .quick-card {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: start;
+    gap: 16px 18px;
+    padding: 18px;
+  }
+
+  .quick-card > div:first-child,
+  .quick-card > .category-grid,
+  .quick-card > .home-search-box,
+  .quick-card > .suggest-search-row {
+    grid-column: 1 / -1;
+  }
+
+  .category-grid {
+    gap: 12px;
+  }
+
+  .category-tile {
+    min-height: 118px;
+    grid-template-columns: auto minmax(0, 1fr);
+    justify-items: start;
+    text-align: left;
+    padding: 16px;
+  }
+
+  .tile-illustration {
+    width: 82px;
+    height: 62px;
+  }
+
+  .tile-copy {
+    justify-items: start;
+    text-align: left;
+  }
+
+  .home-search-box {
+    width: min(760px, 100%);
+    min-height: 56px;
+    padding: 0 16px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: #ffffff;
+  }
+
+  .home-search-box input {
+    min-height: 54px;
+  }
+
+  .shortcut-group {
+    align-content: start;
+    gap: 10px;
+  }
+
+  .region-shortcuts {
+    align-content: start;
+    max-height: 124px;
+    overflow-y: auto;
+    padding-right: 2px;
+  }
+
+  .filter-row {
+    flex-wrap: wrap;
+    overflow-x: visible;
+    padding-bottom: 0;
+  }
+
+  .policy-list.featured-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .site-footer {
+    padding-bottom: 38px;
+  }
+}
+
+@media (min-width: 1040px) {
+  .policy-list.full-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .policy-list.full-list .policy-card {
+    grid-template-columns: 104px minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .policy-list.full-list .policy-thumb {
+    width: 104px;
+    aspect-ratio: 1;
+  }
+
+  .policy-list.full-list .policy-thumb .tile-illustration {
+    width: 82px;
+    height: 62px;
+  }
+}

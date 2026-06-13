@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="720" viewBox="0 0 960 720" role="img" aria-labelledby="title desc">
+  <title id="title">정책 검색 화면과 서류 일러스트</title>
+  <desc id="desc">정부지원금25 모바일 화면과 신청 서류를 표현한 파란 계열 일러스트</desc>
+  <rect width="960" height="720" fill="#dbeafe"/>
+  <circle cx="790" cy="128" r="92" fill="#bfdbfe"/>
+  <circle cx="120" cy="610" r="150" fill="#eff6ff"/>
+  <rect x="108" y="118" width="318" height="470" rx="34" fill="#0f172a"/>
+  <rect x="132" y="154" width="270" height="398" rx="22" fill="#ffffff"/>
+  <rect x="162" y="192" width="150" height="20" rx="10" fill="#2563eb"/>
+  <rect x="162" y="238" width="204" height="16" rx="8" fill="#cbd5e1"/>
+  <rect x="162" y="284" width="196" height="64" rx="14" fill="#eff6ff"/>
+  <rect x="182" y="306" width="72" height="14" rx="7" fill="#2563eb"/>
+  <rect x="162" y="370" width="196" height="64" rx="14" fill="#eff6ff"/>
+  <rect x="182" y="392" width="92" height="14" rx="7" fill="#1d4ed8"/>
+  <rect x="162" y="456" width="196" height="54" rx="14" fill="#2563eb"/>
+  <text x="204" y="490" fill="#ffffff" font-family="Arial, sans-serif" font-size="20" font-weight="700">정책 찾기</text>
+  <rect x="490" y="158" width="300" height="392" rx="24" fill="#ffffff"/>
+  <rect x="530" y="202" width="174" height="18" rx="9" fill="#0f172a"/>
+  <rect x="530" y="252" width="216" height="14" rx="7" fill="#94a3b8"/>
+  <rect x="530" y="288" width="186" height="14" rx="7" fill="#cbd5e1"/>
+  <rect x="530" y="340" width="220" height="86" rx="18" fill="#eff6ff"/>
+  <rect x="558" y="370" width="86" height="16" rx="8" fill="#2563eb"/>
+  <rect x="558" y="396" width="144" height="12" rx="6" fill="#93c5fd"/>
+  <rect x="530" y="456" width="132" height="44" rx="10" fill="#2563eb"/>
+  <text x="564" y="484" fill="#ffffff" font-family="Arial, sans-serif" font-size="16" font-weight="700">신청하기</text>
+  <path d="M712 530c52-54 72-106 58-156" fill="none" stroke="#1d4ed8" stroke-width="12" stroke-linecap="round"/>
+  <path d="M765 374l-18 32 38-4" fill="none" stroke="#1d4ed8" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

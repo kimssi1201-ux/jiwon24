@@ -70,9 +70,9 @@
 
   function regionPriority(policy, region) {
     if (region === "전체지역" || region === "전국") return 0;
+    if (isNationalPolicy(policy)) return 1;
     const source = regionSource(policy);
     if (aliasesFor(region).some((alias) => source.includes(alias))) return 0;
-    if (isNationalPolicy(policy)) return 1;
     return 2;
   }
 
@@ -104,8 +104,15 @@
     return list;
   };
 
-  policies = mergePolicies(policies, staticPolicies);
-  renderCategory();
+  function renderMergedStaticPolicies() {
+    policies = mergePolicies(policies, staticPolicies);
+    renderCategory();
+  }
+
+  renderMergedStaticPolicies();
+  [1200, 3500, 6500].forEach((delay) => {
+    setTimeout(renderMergedStaticPolicies, delay);
+  });
 
   fetch("/api/policies?pages=20&perPage=500&maxItems=10000", {
     headers: { Accept: "application/json" },

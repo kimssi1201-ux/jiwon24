@@ -138,7 +138,7 @@
 
   async function loadRequestedPolicy() {
     try {
-      const response = await fetch("/api/policies?pages=20&perPage=500&maxItems=10000", {
+      const response = await fetch("/api/policies?pages=40&perPage=500&maxItems=12000", {
         headers: { Accept: "application/json" },
         cache: "no-store",
       });

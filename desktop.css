@@ -14,12 +14,14 @@
 }
 
 .hero-media {
-  background:
-    #dbe7e6 url("assets/hero-app-cafe.jpg?v=2") center / cover no-repeat;
+  background: #eef6f4;
 }
 
 .hero-media > img {
-  opacity: 0;
+  object-fit: contain;
+  object-position: center;
+  background: #eef6f4;
+  opacity: 1;
 }
 
 @media (min-width: 760px) {

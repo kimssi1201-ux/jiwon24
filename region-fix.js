@@ -22,6 +22,7 @@
   };
 
   const staticPolicies = Array.isArray(window.GG24_DATA?.policies) ? window.GG24_DATA.policies : [];
+  let fullPolicyLoadFinished = false;
 
   function keyFor(policy) {
     return policy?.id || `${policy?.title || ""}-${policy?.institution || ""}`;
@@ -118,6 +119,32 @@
     };
   }
 
+  function currentFilters() {
+    const liveParams = new URLSearchParams(location.search);
+    return typeof readCategoryFilters === "function"
+      ? readCategoryFilters(liveParams)
+      : fallbackCategoryFilters(liveParams);
+  }
+
+  function isFocusedFilter(filters) {
+    return (
+      filters.type !== "전체" ||
+      filters.region !== "전체지역" ||
+      filters.age !== "전체연령" ||
+      filters.target !== "전체대상" ||
+      Boolean(filters.query)
+    );
+  }
+
+  function showMergedLoading() {
+    const count = document.querySelector("#categoryCount");
+    const list = document.querySelector("#policyList");
+    const notice = document.querySelector("#resultNotice");
+    if (count) count.textContent = "불러오는 중";
+    if (notice) notice.textContent = "";
+    if (list) list.innerHTML = `<div class="empty-card">조건에 맞는 정책을 불러오고 있습니다.</div>`;
+  }
+
   function matchesRegion(policy, region) {
     if (region === "전체지역") return true;
     if (region === "전국") return isNationalPolicy(policy);
@@ -136,11 +163,7 @@
   }
 
   filteredPolicies = function filteredPoliciesWithRegionFallback() {
-    const liveParams = new URLSearchParams(location.search);
-    const filters =
-      typeof readCategoryFilters === "function"
-        ? readCategoryFilters(liveParams)
-        : fallbackCategoryFilters(liveParams);
+    const filters = currentFilters();
     const { type, region, age, target } = filters;
     const query = filters.query.toLowerCase();
 
@@ -166,6 +189,11 @@
 
   function renderMergedStaticPolicies() {
     policies = mergePolicies(policies, staticPolicies);
+    const filters = currentFilters();
+    if (!fullPolicyLoadFinished && isFocusedFilter(filters) && !filteredPolicies().length) {
+      showMergedLoading();
+      return;
+    }
     renderCategory();
   }
 
@@ -181,9 +209,13 @@
     .then((response) => (response.ok ? response.json() : null))
     .then((liveData) => {
       if (Array.isArray(liveData?.policies) && liveData.policies.length) {
+        fullPolicyLoadFinished = true;
         policies = mergePolicies(liveData.policies, staticPolicies);
         renderCategory();
       }
     })
-    .catch(() => undefined);
+    .catch(() => {
+      fullPolicyLoadFinished = true;
+      renderCategory();
+    });
 })();

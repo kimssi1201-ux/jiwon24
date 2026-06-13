@@ -1,4 +1,4 @@
-const CACHE_NAME = "gov-support25-site-v29";
+const CACHE_NAME = "gov-support25-site-v30";
 const ASSETS = [
   "./",
   "./index.html",
@@ -30,7 +30,7 @@ const ASSETS = [
   "./assets/illustration-refund.svg",
   "./assets/illustration-loan.svg",
   "./assets/icon-government-support25.svg?v=2",
-  "./assets/logo-government-support25.svg?v=2",
+  "./assets/logo-government-support25.svg?v=3",
 ];
 
 self.addEventListener("install", (event) => {

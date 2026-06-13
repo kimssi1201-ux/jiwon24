@@ -161,23 +161,52 @@ async function fetchPage(serviceKey, page, perPage) {
   url.searchParams.set("perPage", String(perPage));
   url.searchParams.set("serviceKey", serviceKey);
 
-  const response = await fetch(url, { headers: { Accept: "application/json" } });
-  if (!response.ok) throw new Error(`Gov24 API request failed: ${response.status}`);
-  return response.json();
+  let lastError;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      const response = await fetch(url, { headers: { Accept: "application/json" } });
+      if (response.ok) return response.json();
+      lastError = new Error(`Gov24 API request failed: ${response.status}`);
+    } catch (error) {
+      lastError = error;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 350 * (attempt + 1)));
+  }
+  throw lastError;
+}
+
+async function fetchFirstPage(serviceKey, perPage) {
+  const candidates = [...new Set([perPage, 500, 300, 200, 100, 50].filter((item) => item <= perPage))];
+  let lastError;
+
+  for (const candidate of candidates) {
+    try {
+      return {
+        body: await fetchPage(serviceKey, 1, candidate),
+        perPage: candidate,
+      };
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError;
 }
 
 async function fetchPolicies(serviceKey, pages, perPage, maxItems) {
-  const first = await fetchPage(serviceKey, 1, perPage);
+  const firstPage = await fetchFirstPage(serviceKey, perPage);
+  const first = firstPage.body;
+  const actualPerPage = firstPage.perPage;
   const totalCount = Number(first.totalCount || first.matchCount || 0);
-  const totalPages = Math.max(1, Math.ceil(totalCount / perPage));
+  const totalPages = Math.max(1, Math.ceil(totalCount / actualPerPage));
   const pageCount = Math.min(pages, totalPages);
   const records = [...(Array.isArray(first.data) ? first.data : [])];
   const failedPages = [];
 
-  for (let start = 2; start <= pageCount; start += 3) {
+  for (let start = 2; start <= pageCount; start += 2) {
     const batch = [];
-    for (let page = start; page < start + 3 && page <= pageCount; page += 1) {
-      batch.push(fetchPage(serviceKey, page, perPage).then((body) => ({ body, page })).catch(() => ({ body: null, page })));
+    for (let page = start; page < start + 2 && page <= pageCount; page += 1) {
+      batch.push(fetchPage(serviceKey, page, actualPerPage).then((body) => ({ body, page })).catch(() => ({ body: null, page })));
     }
     const bodies = await Promise.all(batch);
     bodies.forEach(({ body, page }) => {
@@ -215,9 +244,9 @@ export async function onRequestGet({ request, env }) {
   if (!serviceKey) return Response.json({ ok: false, message: "DATA_GO_KR_KEY is missing" }, { status: 500 });
 
   const url = new URL(request.url);
-  const pages = numberParam(url.searchParams, "pages", 6, 1, 40);
-  const perPage = numberParam(url.searchParams, "perPage", 500, 50, 1000);
-  const maxItems = numberParam(url.searchParams, "maxItems", 3000, 100, 12000);
+  const pages = numberParam(url.searchParams, "pages", 8, 1, 40);
+  const perPage = numberParam(url.searchParams, "perPage", 300, 50, 1000);
+  const maxItems = numberParam(url.searchParams, "maxItems", 2400, 100, 12000);
 
   try {
     const payload = await fetchPolicies(serviceKey, pages, perPage, maxItems);

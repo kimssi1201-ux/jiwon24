@@ -1,4 +1,4 @@
-const CACHE_NAME = "gov-support25-site-v6";
+const CACHE_NAME = "gov-support25-site-v7";
 const ASSETS = [
   "./",
   "./index.html",
@@ -9,8 +9,6 @@ const ASSETS = [
   "./privacy.html",
   "./styles.css",
   "./desktop.css",
-  "./site-data.js",
-  "./site.js",
   "./manifest.webmanifest",
   "./assets/claim-desk-hero.svg",
   "./assets/illustration-support.svg",
@@ -21,6 +19,7 @@ const ASSETS = [
 ];
 
 self.addEventListener("install", (event) => {
+  self.skipWaiting();
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)).catch(() => undefined));
 });
 
@@ -30,9 +29,22 @@ self.addEventListener("activate", (event) => {
       Promise.all(keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))),
     ),
   );
+  self.clients.claim();
 });
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+  const url = new URL(event.request.url);
+  const networkFirst =
+    url.pathname.startsWith("/api/") ||
+    url.pathname.endsWith("/site.js") ||
+    url.pathname.endsWith("/site-data.js") ||
+    event.request.mode === "navigate";
+
+  if (networkFirst) {
+    event.respondWith(fetch(event.request).catch(() => caches.match(event.request)));
+    return;
+  }
+
   event.respondWith(caches.match(event.request).then((cached) => cached || fetch(event.request)));
 });

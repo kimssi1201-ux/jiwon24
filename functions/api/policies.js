@@ -39,8 +39,8 @@ const fallbackPolicies = [
 
 const regionPatterns = [
   ["서울", /서울/],
-  ["부산", /부산/],
-  ["대구", /대구/],
+  ["부산", /부산|해운대구|해운대/],
+  ["대구", /대구광역시|대구시|(^|[^가-힣])대구($|[^가-힣])/],
   ["인천", /인천/],
   ["광주", /광주/],
   ["대전", /대전/],
@@ -203,9 +203,9 @@ async function fetchPolicies(serviceKey, pages, perPage, maxItems) {
   const records = [...(Array.isArray(first.data) ? first.data : [])];
   const failedPages = [];
 
-  for (let start = 2; start <= pageCount; start += 2) {
+  for (let start = 2; start <= pageCount; start += 8) {
     const batch = [];
-    for (let page = start; page < start + 2 && page <= pageCount; page += 1) {
+    for (let page = start; page < start + 8 && page <= pageCount; page += 1) {
       batch.push(fetchPage(serviceKey, page, actualPerPage).then((body) => ({ body, page })).catch(() => ({ body: null, page })));
     }
     const bodies = await Promise.all(batch);

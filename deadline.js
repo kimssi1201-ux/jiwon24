@@ -3,6 +3,39 @@
   const list = document.querySelector("#urgentPolicies");
   const label = document.querySelector("#urgentPolicyLabel");
   const dataDateLabel = document.querySelector("#dataDateLabel");
+  if (!document.querySelector("#urgentPolicyAccentStyle")) {
+    const style = document.createElement("style");
+    style.id = "urgentPolicyAccentStyle";
+    style.textContent = `
+      .urgent-section {
+        padding: 14px;
+        border: 1px solid rgba(239, 68, 68, 0.18);
+        border-radius: var(--radius);
+        background: linear-gradient(180deg, #fff7f4 0%, #ffffff 100%);
+      }
+
+      .urgent-section .section-head h2 {
+        color: #b42318;
+      }
+
+      .urgent-section .section-head span,
+      .urgent-section .more-link {
+        color: #c2410c;
+      }
+
+      .urgent-section .policy-card {
+        border-color: rgba(248, 113, 113, 0.3);
+        background: linear-gradient(180deg, #fffafa 0%, #ffffff 100%);
+        box-shadow: 0 10px 24px rgba(185, 28, 28, 0.08);
+      }
+
+      .urgent-section .badge.deadline {
+        background: #fee2e2;
+        color: #b91c1c;
+      }
+    `;
+    document.head.appendChild(style);
+  }
   if (dataDateLabel) {
     dataDateLabel.textContent = "";
     dataDateLabel.hidden = true;

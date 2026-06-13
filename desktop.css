@@ -13,6 +13,15 @@
   text-indent: -999px;
 }
 
+.hero-media {
+  background:
+    #dbe7e6 url("assets/hero-app-cafe.jpg?v=2") center / cover no-repeat;
+}
+
+.hero-media > img {
+  opacity: 0;
+}
+
 @media (min-width: 760px) {
   .site-main {
     padding: 22px 18px 48px;

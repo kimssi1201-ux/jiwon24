@@ -309,7 +309,9 @@ async function fetchGov24Policies({ serviceKey, pages, perPage, maxItems }) {
 }
 
 function numberParam(searchParams, name, fallback, min, max) {
-  const value = Number(searchParams.get(name));
+  const rawValue = searchParams.get(name);
+  if (rawValue === null || rawValue.trim() === "") return fallback;
+  const value = Number(rawValue);
   if (!Number.isFinite(value)) return fallback;
   return Math.max(min, Math.min(max, Math.floor(value)));
 }

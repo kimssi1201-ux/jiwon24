@@ -4,6 +4,7 @@
   if (!detail || !requestedId) return;
 
   let renderedPolicy = null;
+  const staticPolicies = Array.isArray(window.GG24_DATA?.policies) ? window.GG24_DATA.policies : [];
 
   function escapeHtml(value) {
     return String(value ?? "")
@@ -127,6 +128,14 @@
     setTimeout(() => observer.disconnect(), 25000);
   }
 
+  function renderStaticPolicy() {
+    const staticPolicy = staticPolicies.find((item) => item.id === requestedId);
+    if (!staticPolicy) return false;
+    renderPolicy(staticPolicy);
+    keepRenderedIfOverwritten();
+    return true;
+  }
+
   async function loadRequestedPolicy() {
     try {
       const response = await fetch("/api/policies?pages=20&perPage=500&maxItems=10000", {
@@ -146,5 +155,6 @@
     }
   }
 
+  renderStaticPolicy();
   loadRequestedPolicy();
 })();

@@ -80,23 +80,39 @@
             </div>
             <div class="category-grid">
               <a class="category-tile" href="category.html?type=지원금">
-                <span class="tile-icon" aria-hidden="true"></span>
-                <span>지원금 정보</span>
+                <img class="tile-illustration" src="assets/illustration-support.svg" alt="" aria-hidden="true" />
+                <span class="tile-copy">
+                  <strong>지원금</strong>
+                  <small>받을 수 있는 혜택</small>
+                </span>
               </a>
               <a class="category-tile" href="category.html?type=환급금">
-                <span class="tile-icon" aria-hidden="true"></span>
-                <span>환급금 정보</span>
+                <img class="tile-illustration" src="assets/illustration-refund.svg" alt="" aria-hidden="true" />
+                <span class="tile-copy">
+                  <strong>환급금</strong>
+                  <small>돌려받는 돈 확인</small>
+                </span>
               </a>
               <a class="category-tile" href="category.html?type=대출">
-                <span class="tile-icon" aria-hidden="true"></span>
-                <span>대출 정보</span>
+                <img class="tile-illustration" src="assets/illustration-loan.svg" alt="" aria-hidden="true" />
+                <span class="tile-copy">
+                  <strong>정책대출</strong>
+                  <small>낮은 금리 상품</small>
+                </span>
               </a>
             </div>
-            <form class="search-box" action="category.html" role="search">
+            <form class="search-box home-search-box" action="category.html" role="search">
               <label class="sr-only" for="homeSearch">정책 검색</label>
-              <input id="homeSearch" name="q" type="search" placeholder="근로장려금, 국민취업지원제도" />
-              <button type="submit" aria-label="검색">⌕</button>
+              <span class="home-search-icon" aria-hidden="true"></span>
+              <input id="homeSearch" name="q" type="search" placeholder="찾아볼 지원금을 입력해 보세요" />
             </form>
+            <div class="suggest-search-row" aria-label="추천 검색어">
+              <span>이런 것 찾으시나요?</span>
+              <a href="category.html?q=근로장려금">근로장려금</a>
+              <a href="category.html?q=국민취업지원제도">국민취업지원제도</a>
+              <a href="category.html?q=디딤돌대출">디딤돌대출</a>
+              <a href="category.html?q=전국민25만원">전국민25만원</a>
+            </div>
             <div class="shortcut-group">
               <span>대상별 보기</span>
               <div class="tag-row region-shortcuts" aria-label="대상별 지원금 바로가기">

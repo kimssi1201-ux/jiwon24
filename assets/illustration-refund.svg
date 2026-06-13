@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="72" viewBox="0 0 96 72" role="img" aria-labelledby="title">
+  <title id="title">환급금 일러스트</title>
+  <rect x="18" y="12" width="44" height="48" rx="10" fill="#fff1f2"/>
+  <path d="M26 24h24M26 34h18M26 44h14" stroke="#fb7185" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="65" cy="43" r="17" fill="#ff785f"/>
+  <path d="M58 42c2.5-5 9-7 14-3M72 39l-1-7M72 39l-7-1" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M72 45c-2.5 5-9 7-14 3M58 48l1 7M58 48l7 1" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

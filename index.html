@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="지원금, 환급금, 정책 대출을 한 화면에서 찾는 정책 큐레이션 사이트"
+    />
+    <meta name="theme-color" content="#2563eb" />
+    <meta property="og:title" content="정부지원금25 - 당신이 찾는 모든 지원금" />
+    <meta property="og:description" content="내게 맞는 지원금과 환급금, 정책 대출을 빠르게 비교하세요." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="assets/logo-government-support25.svg" />
+    <link rel="icon" href="assets/icon-government-support25.svg" type="image/svg+xml" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="stylesheet" href="styles.css" />
+    <title>정부지원금25 - 당신이 찾는 모든 지원금</title>
+  </head>
+  <body data-page="home">
+    <div class="promo-bar">
+      <span>공공데이터 기반 정책 정보를 한곳에서 확인하세요.</span>
+      <a href="category.html">정책 보기</a>
+    </div>
+
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="index.html" aria-label="정부지원금25 홈">
+          <span class="brand-mark">25</span>
+          <span class="brand-copy">
+            <strong>정부지원금25</strong>
+            <small>공공데이터 기반 정책 검색</small>
+          </span>
+        </a>
+        <span class="trust-badge">공식 원문 연결</span>
+        <nav class="desktop-nav" aria-label="주요 메뉴">
+          <a href="category.html?type=지원금">지원금</a>
+          <a href="category.html?type=환급금">환급금</a>
+          <a href="category.html?type=대출">대출</a>
+        </nav>
+        <form class="site-search" id="siteSearch" role="search">
+          <label class="sr-only" for="globalSearch">검색</label>
+          <input id="globalSearch" type="search" placeholder="근로장려금, 디딤돌대출, 환급금" />
+          <button type="submit" aria-label="검색">⌕</button>
+        </form>
+      </div>
+    </header>
+
+    <main class="site-main">
+      <div class="page-stack">
+        <section class="hero-layout" aria-label="홈">
+          <article class="hero-card">
+            <div class="hero-copy">
+              <p class="eyebrow">맞춤 정책</p>
+              <h1>내게 맞춘<br />지원금을 찾아보세요</h1>
+              <p>거주지, 소득, 관심 주제에 맞춰 지원금·환급금·정책대출을 빠르게 비교합니다.</p>
+              <div class="hero-actions">
+                <a class="primary-button" href="category.html">정책 찾기</a>
+              </div>
+            </div>
+            <figure class="hero-media">
+              <img src="assets/claim-desk-hero.svg" alt="모바일 신청 화면과 서류가 놓인 책상" />
+              <figcaption class="download-panel">
+                <span>
+                  <strong>앱 출시 다운로드</strong><br />
+                  <small>휴대폰에서 더 빠르게 확인</small>
+                </span>
+                <span class="store-row">
+                  <button type="button" data-store>Google Play</button>
+                  <button type="button" data-store>App Store</button>
+                </span>
+              </figcaption>
+            </figure>
+          </article>
+
+          <aside class="quick-card" aria-label="빠른 탐색">
+            <div>
+              <h2>원하시는 항목이 있으신가요?</h2>
+              <span>지원금 정보</span>
+            </div>
+            <div class="category-grid">
+              <a class="category-tile" href="category.html?type=지원금">
+                <span class="tile-icon" aria-hidden="true"></span>
+                <span>지원금 정보</span>
+              </a>
+              <a class="category-tile" href="category.html?type=환급금">
+                <span class="tile-icon" aria-hidden="true"></span>
+                <span>환급금 정보</span>
+              </a>
+              <a class="category-tile" href="category.html?type=대출">
+                <span class="tile-icon" aria-hidden="true"></span>
+                <span>대출 정보</span>
+              </a>
+            </div>
+            <form class="search-box" action="category.html" role="search">
+              <label class="sr-only" for="homeSearch">정책 검색</label>
+              <input id="homeSearch" name="q" type="search" placeholder="근로장려금, 국민취업지원제도" />
+              <button type="submit" aria-label="검색">⌕</button>
+            </form>
+            <div class="shortcut-group">
+              <span>대상별 보기</span>
+              <div class="tag-row region-shortcuts" aria-label="대상별 지원금 바로가기">
+                <a href="category.html?target=국가유공자·보훈">국가유공자·보훈</a>
+                <a href="category.html?target=장애인">장애인</a>
+                <a href="category.html?target=소상공인">소상공인</a>
+                <a href="category.html?target=농어업인">농어업인</a>
+                <a href="category.html?target=저소득층">저소득층</a>
+                <a href="category.html?target=신혼부부">신혼부부</a>
+              </div>
+            </div>
+            <div class="shortcut-group">
+              <span>나이대별 보기</span>
+              <div class="tag-row region-shortcuts" aria-label="나이대별 지원금 바로가기">
+                <a href="category.html?age=영유아·출산">영유아·출산</a>
+                <a href="category.html?age=아동·청소년">아동·청소년</a>
+                <a href="category.html?age=청년">청년</a>
+                <a href="category.html?age=중장년">중장년</a>
+                <a href="category.html?age=어르신">어르신</a>
+              </div>
+            </div>
+            <div class="shortcut-group">
+              <span>지역별 보기</span>
+              <div class="tag-row region-shortcuts" aria-label="지역별 지원금 바로가기">
+                <a href="category.html?region=전국">전국 지원금</a>
+                <a href="category.html?region=서울">서울 지원금</a>
+                <a href="category.html?region=경기">경기 지원금</a>
+                <a href="category.html?region=인천">인천 지원금</a>
+                <a href="category.html?region=부산">부산 지원금</a>
+                <a href="category.html?region=대구">대구 지원금</a>
+                <a href="category.html?region=광주">광주 지원금</a>
+                <a href="category.html?region=대전">대전 지원금</a>
+                <a href="category.html?region=울산">울산 지원금</a>
+                <a href="category.html?region=세종">세종 지원금</a>
+                <a href="category.html?region=강원">강원 지원금</a>
+                <a href="category.html?region=충북">충북 지원금</a>
+                <a href="category.html?region=충남">충남 지원금</a>
+                <a href="category.html?region=전북">전북 지원금</a>
+                <a href="category.html?region=전남">전남 지원금</a>
+                <a href="category.html?region=경북">경북 지원금</a>
+                <a href="category.html?region=경남">경남 지원금</a>
+                <a href="category.html?region=제주">제주 지원금</a>
+              </div>
+            </div>
+          </aside>
+        </section>
+
+        <section class="section">
+          <div class="section-head">
+            <div>
+              <h2>현재 주목 받는 지원금</h2>
+              <span id="dataDateLabel">공식 데이터 기준</span>
+            </div>
+            <a class="more-link" href="category.html">더보기</a>
+          </div>
+          <div class="policy-list featured-list" id="featuredPolicies"></div>
+        </section>
+
+      </div>
+    </main>
+
+    <nav class="bottom-nav" aria-label="하단 메뉴">
+      <a class="active" href="index.html"><span class="nav-dot nav-home"></span><span>홈</span></a>
+      <a href="category.html"><span class="nav-dot nav-doc"></span><span>맞춤 정책</span></a>
+    </nav>
+
+    <footer class="site-footer">
+      <strong>정부지원금25</strong>
+      <p>정부지원금 정보를 쉽고 빠르게 전달하는 서비스입니다. 본 사이트 정보는 참고용이며 정확한 내용은 해당 기관에서 확인해야 합니다.</p>
+      <div class="footer-links">
+        <a href="about.html">회사소개</a>
+        <a href="terms.html">이용약관</a>
+        <a href="privacy.html">개인정보처리방침</a>
+      </div>
+    </footer>
+
+    <div class="toast" id="toast" role="status" hidden></div>
+    <script src="site-data.js"></script>
+    <script src="site.js"></script>
+  </body>
+</html>

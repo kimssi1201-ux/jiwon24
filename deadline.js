@@ -4,7 +4,7 @@
   const label = document.querySelector("#urgentPolicyLabel");
   if (!section || !list) return;
 
-  const URGENT_WINDOW_DAYS = 45;
+  const URGENT_WINDOW_DAYS = 3;
   const URGENT_LIMIT = 4;
   const money = new Intl.NumberFormat("ko-KR");
   const today = new Date();

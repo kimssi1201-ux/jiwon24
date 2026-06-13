@@ -247,13 +247,16 @@ function showCategoryLoading() {
 
 async function loadLivePolicies() {
   if (!["home", "category", "policy"].includes(page)) return;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 18000);
 
   try {
-    const response = await fetch("/api/policies", {
+    const response = await fetch("/api/policies?pages=6&perPage=500&maxItems=3000", {
       headers: {
         Accept: "application/json",
       },
       cache: "no-store",
+      signal: controller.signal,
     });
     if (!response.ok) return;
     const liveData = await response.json();
@@ -264,6 +267,8 @@ async function loadLivePolicies() {
   } catch {
     // Local static previews keep using site-data.js when Cloudflare Functions are unavailable.
     return false;
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
@@ -437,9 +442,30 @@ async function init() {
     return;
   }
 
+  if (page === "home") {
+    renderHome();
+    bindCommonActions();
+    loadLivePolicies().then((updated) => {
+      if (updated) renderHome();
+    });
+    registerServiceWorker();
+    return;
+  }
+
+  if (page === "policy") {
+    renderPolicyDetail();
+    bindCommonActions();
+    loadLivePolicies().then((updated) => {
+      if (updated) {
+        renderPolicyDetail();
+        bindCommonActions();
+      }
+    });
+    registerServiceWorker();
+    return;
+  }
+
   await loadLivePolicies();
-  if (page === "home") renderHome();
-  if (page === "policy") renderPolicyDetail();
   bindCommonActions();
   registerServiceWorker();
 }

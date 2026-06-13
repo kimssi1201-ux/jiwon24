@@ -50,7 +50,7 @@ const regionPatterns = [
   ["강원", /강원|춘천|원주|강릉|동해|속초|삼척/],
   ["충북", /충북|충청북도|청주|충주|제천/],
   ["충남", /충남|충청남도|천안|공주|아산|서산|논산|계룡|당진|태안|홍성/],
-  ["전북", /전북|전라북도|전북특별자치도|전주|군산|익산|정읍|남원|김제/],
+  ["전북", /전북|전라북도|전주|군산|익산|정읍|남원|김제/],
   ["전남", /전남|전라남도|목포|여수|순천|나주|광양/],
   ["경북", /경북|경상북도|포항|경주|김천|안동|구미|영주|영천|상주|문경|경산/],
   ["경남", /경남|경상남도|창원|진주|통영|사천|김해|밀양|거제|양산/],
@@ -155,11 +155,14 @@ function dedupe(policies) {
   });
 }
 
-async function fetchPage(serviceKey, page, perPage) {
+async function fetchPage(serviceKey, page, perPage, extraParams = {}) {
   const url = new URL(ENDPOINT);
   url.searchParams.set("page", String(page));
   url.searchParams.set("perPage", String(perPage));
   url.searchParams.set("serviceKey", serviceKey);
+  Object.entries(extraParams).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "") url.searchParams.set(key, String(value));
+  });
 
   let lastError;
   for (let attempt = 0; attempt < 3; attempt += 1) {
@@ -242,17 +245,82 @@ async function fetchPolicies(serviceKey, pages, perPage, maxItems, startPage = 1
   };
 }
 
+async function fetchPolicyById(serviceKey, requestedId) {
+  const fallback = fallbackPolicies.find((policy) => policy.id === requestedId);
+  if (fallback) return fallback;
+
+  const serviceId = String(requestedId || "").replace(/^gov24-/, "");
+  if (!serviceId) return null;
+
+  try {
+    const exact = await fetchPage(serviceKey, 1, 20, { "cond[서비스ID::EQ]": serviceId });
+    const exactRecord = Array.isArray(exact.data)
+      ? exact.data.find((record, index) => policyFromRecord(record, index).id === requestedId || value(record, "서비스ID") === serviceId)
+      : null;
+    if (exactRecord) return policyFromRecord(exactRecord, 0);
+  } catch {
+    // Some upstream mirrors may not support cond filters. Fall back to a bounded page scan.
+  }
+
+  const firstPage = await fetchFirstPage(serviceKey, 1000);
+  const first = firstPage.body;
+  const actualPerPage = firstPage.perPage;
+  const totalCount = Number(first.totalCount || first.matchCount || 0);
+  const totalPages = Math.max(1, Math.ceil(totalCount / actualPerPage));
+  const firstRecords = Array.isArray(first.data) ? first.data : [];
+
+  for (const [index, record] of firstRecords.entries()) {
+    const policy = policyFromRecord(record, index);
+    if (policy.id === requestedId || value(record, "서비스ID") === serviceId) return policy;
+  }
+
+  for (let page = 2; page <= totalPages; page += 1) {
+    const body = await fetchPage(serviceKey, page, actualPerPage).catch(() => null);
+    if (!Array.isArray(body?.data)) continue;
+    for (const [index, record] of body.data.entries()) {
+      const policy = policyFromRecord(record, index);
+      if (policy.id === requestedId || value(record, "서비스ID") === serviceId) return policy;
+    }
+  }
+
+  return null;
+}
+
 export async function onRequestGet({ request, env }) {
   const serviceKey = value(env, "DATA_GO_KR_KEY", value(env, "DATA_GO_KR_SERVICE_KEY"));
   if (!serviceKey) return Response.json({ ok: false, message: "DATA_GO_KR_KEY is missing" }, { status: 500 });
 
   const url = new URL(request.url);
+  const requestedId = (url.searchParams.get("id") || "").trim();
   const pages = numberParam(url.searchParams, "pages", 8, 1, 40);
   const perPage = numberParam(url.searchParams, "perPage", 300, 50, 1000);
   const maxItems = numberParam(url.searchParams, "maxItems", 2400, 100, 12000);
   const startPage = numberParam(url.searchParams, "startPage", 1, 1, 40);
 
   try {
+    if (requestedId) {
+      const policy = await fetchPolicyById(serviceKey, requestedId);
+      return Response.json(
+        {
+          generatedAt: new Date().toISOString(),
+          source: {
+            name: "행정안전부_대한민국 공공서비스(혜택) 정보",
+            provider: "공공데이터포털",
+            url: "https://www.data.go.kr/data/15113968/openapi.do",
+            endpoint: ENDPOINT,
+            id: requestedId,
+          },
+          policies: policy ? [policy] : [],
+          policy,
+        },
+        {
+          headers: {
+            "Cache-Control": "public, max-age=0, s-maxage=1800, stale-while-revalidate=3600",
+          },
+        },
+      );
+    }
+
     const payload = await fetchPolicies(serviceKey, pages, perPage, maxItems, startPage);
     return Response.json(payload, {
       headers: {

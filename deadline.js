@@ -3,6 +3,35 @@
   const list = document.querySelector("#urgentPolicies");
   const label = document.querySelector("#urgentPolicyLabel");
   const dataDateLabel = document.querySelector("#dataDateLabel");
+  const SITE_NAME = "지원금 올데이";
+  const OLD_NAMES = ["정부지원금25", "지원금25"];
+
+  function applySiteName() {
+    document.querySelectorAll(".brand-copy strong, .site-footer strong").forEach((element) => {
+      element.textContent = SITE_NAME;
+    });
+    document.querySelectorAll("[aria-label]").forEach((element) => {
+      const labelText = element.getAttribute("aria-label") || "";
+      const replaced = OLD_NAMES.reduce((text, oldName) => text.replaceAll(oldName, SITE_NAME), labelText);
+      if (replaced !== labelText) element.setAttribute("aria-label", replaced);
+    });
+    document.querySelectorAll(".site-footer p, .site-footer a").forEach((element) => {
+      let text = element.textContent || "";
+      OLD_NAMES.forEach((oldName) => {
+        text = text.replaceAll(oldName, SITE_NAME);
+      });
+      element.textContent = text;
+    });
+    document.title = OLD_NAMES.reduce((text, oldName) => text.replaceAll(oldName, SITE_NAME), document.title);
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) {
+      const value = ogTitle.getAttribute("content") || "";
+      ogTitle.setAttribute("content", OLD_NAMES.reduce((text, oldName) => text.replaceAll(oldName, SITE_NAME), value));
+    }
+  }
+
+  applySiteName();
+
   if (!document.querySelector("#urgentPolicyAccentStyle")) {
     const style = document.createElement("style");
     style.id = "urgentPolicyAccentStyle";

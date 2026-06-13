@@ -228,20 +228,39 @@
     setTimeout(renderMergedStaticPolicies, delay);
   });
 
-  fetch("/api/policies?pages=40&perPage=500&maxItems=12000", {
-    headers: { Accept: "application/json" },
-    cache: "no-store",
-  })
-    .then((response) => (response.ok ? response.json() : null))
-    .then((liveData) => {
-      if (Array.isArray(liveData?.policies) && liveData.policies.length) {
+  async function loadPolicyChunks() {
+    const chunkStarts = [1, 6, 11, 16, 21, 26, 31, 36];
+    let livePolicies = [];
+
+    for (let index = 0; index < chunkStarts.length; index += 2) {
+      const batch = chunkStarts.slice(index, index + 2).map((startPage) =>
+        fetch(`/api/policies?startPage=${startPage}&pages=5&perPage=500&maxItems=2500`, {
+          headers: { Accept: "application/json" },
+          cache: "no-store",
+        })
+          .then((response) => (response.ok ? response.json() : null))
+          .catch(() => null),
+      );
+      const chunks = await Promise.all(batch);
+      chunks.forEach((liveData) => {
+        if (Array.isArray(liveData?.policies) && liveData.policies.length) {
+          livePolicies = mergePolicies(livePolicies, liveData.policies);
+        }
+      });
+
+      if (livePolicies.length) {
         fullPolicyLoadFinished = true;
-        policies = mergePolicies(liveData.policies, staticPolicies);
+        policies = mergePolicies(livePolicies, staticPolicies);
         renderCategory();
       }
-    })
-    .catch(() => {
-      fullPolicyLoadFinished = true;
-      renderCategory();
-    });
+    }
+
+    fullPolicyLoadFinished = true;
+    renderCategory();
+  }
+
+  loadPolicyChunks().catch(() => {
+    fullPolicyLoadFinished = true;
+    renderCategory();
+  });
 })();

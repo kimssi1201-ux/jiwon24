@@ -13,6 +13,10 @@
   text-indent: -999px;
 }
 
+.bottom-nav {
+  display: none !important;
+}
+
 .hero-media {
   background: #eef6f4;
 }

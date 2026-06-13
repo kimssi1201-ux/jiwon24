@@ -130,6 +130,14 @@
     setTimeout(() => observer.disconnect(), 25000);
   }
 
+  function renderStaticPolicy() {
+    const staticPolicy = staticPolicies.find((item) => item.id === requestedId);
+    if (!staticPolicy) return false;
+    renderPolicy(staticPolicy);
+    keepRenderedIfOverwritten();
+    return true;
+  }
+
   function renderSnapshotPolicy() {
     try {
       const snapshot = JSON.parse(sessionStorage.getItem(policySnapshotKey) || "null");
@@ -142,12 +150,15 @@
     }
   }
 
-  function renderStaticPolicy() {
-    const staticPolicy = staticPolicies.find((item) => item.id === requestedId);
-    if (!staticPolicy) return false;
-    renderPolicy(staticPolicy);
-    keepRenderedIfOverwritten();
-    return true;
+  async function fetchExactPolicy() {
+    const response = await fetch(`/api/policies?id=${encodeURIComponent(requestedId)}`, {
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+    }).catch(() => null);
+    if (!response?.ok) return null;
+    const liveData = await response.json().catch(() => null);
+    if (liveData?.policy?.id === requestedId) return liveData.policy;
+    return (Array.isArray(liveData?.policies) ? liveData.policies : []).find((item) => item.id === requestedId) || null;
   }
 
   async function loadRequestedPolicy() {
@@ -156,6 +167,13 @@
     }
 
     try {
+      const exactPolicy = await fetchExactPolicy();
+      if (exactPolicy) {
+        renderPolicy(exactPolicy);
+        keepRenderedIfOverwritten();
+        return;
+      }
+
       for (let index = 0; index < chunkStarts.length; index += 2) {
         const batch = chunkStarts.slice(index, index + 2).map((startPage) =>
           fetch(`/api/policies?startPage=${startPage}&pages=5&perPage=500&maxItems=2500`, {
@@ -177,7 +195,7 @@
         }
       }
     } catch {
-      // The existing snapshot/static render remains visible when the API is unavailable.
+      // The main detail renderer keeps the existing fallback message.
     }
 
     if (!renderedPolicy) {

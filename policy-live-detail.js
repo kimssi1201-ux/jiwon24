@@ -61,7 +61,7 @@
       : `<button class="primary-button" type="button" data-apply>신청하기</button>`;
     const tags = Array.isArray(policy.tags) ? policy.tags : [];
 
-    document.title = `${policy.title} - 정부지원금25`;
+    document.title = `${policy.title} - 지원금 올데이`;
     detail.innerHTML = `
       <div class="detail-head">
         <div class="meta-row">

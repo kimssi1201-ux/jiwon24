@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">정부지원금25 아이콘</title>
+  <rect width="512" height="512" rx="112" fill="#2563eb"/>
+  <path d="M124 180h116c42 0 74 28 74 68 0 32-17 55-49 76l-63 42h116v58H121v-45l105-71c27-18 38-34 38-55 0-17-13-28-34-28H124v-45z" fill="#ffffff"/>
+  <path d="M305 165h102v56h-66l-8 43c13-8 28-12 46-12 54 0 90 36 90 86 0 58-45 96-109 96-43 0-78-14-106-40l37-45c20 18 42 28 69 28 30 0 50-15 50-41 0-27-22-43-57-43-22 0-40 6-58 17l-38-25 18-120z" fill="#dbeafe"/>
+</svg>

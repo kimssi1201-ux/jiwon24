@@ -1,4 +1,4 @@
-const CACHE_NAME = "gov-support25-site-v26";
+const CACHE_NAME = "gov-support25-site-v27";
 const ASSETS = [
   "./",
   "./index.html",
@@ -54,6 +54,7 @@ self.addEventListener("fetch", (event) => {
     url.pathname.startsWith("/api/") ||
     url.pathname.endsWith("/site.js") ||
     url.pathname.endsWith("/site-data.js") ||
+    url.pathname.endsWith("/deadline.js") ||
     event.request.mode === "navigate";
 
   if (networkFirst) {

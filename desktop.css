@@ -6,7 +6,7 @@
   overflow: hidden;
   border-radius: 14px;
   background:
-    #ffffff url("assets/logo-government-support25.svg?v=2") center / cover no-repeat;
+    #ffffff url("assets/logo-government-support25.svg?v=3") center / contain no-repeat;
   color: transparent;
   font-size: 0;
   line-height: 0;

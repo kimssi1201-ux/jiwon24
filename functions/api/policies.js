@@ -42,15 +42,15 @@ const regionPatterns = [
   ["부산", /부산|해운대구|해운대/],
   ["대구", /대구광역시|대구시|(^|[^가-힣])대구($|[^가-힣])/],
   ["인천", /인천/],
-  ["광주", /광주/],
   ["대전", /대전/],
   ["울산", /울산/],
   ["세종", /세종/],
-  ["경기", /경기|수원|성남|고양|용인|부천|화성|남양주|안양|평택|파주|김포|광명/],
+  ["경기", /경기|수원|성남|고양|용인|부천|화성|남양주|안양|평택|파주|김포|광명|광주시/],
+  ["광주", /광주광역시|(^|[^가-힣])광주($|[^가-힣])/],
   ["강원", /강원|춘천|원주|강릉|동해|속초|삼척/],
   ["충북", /충북|충청북도|청주|충주|제천/],
   ["충남", /충남|충청남도|천안|공주|아산|서산|논산|계룡|당진|태안|홍성/],
-  ["전북", /전북|전라북도|전주|군산|익산|정읍|남원|김제/],
+  ["전북", /전북|전라북도|전북특별자치도|전주|군산|익산|정읍|남원|김제/],
   ["전남", /전남|전라남도|목포|여수|순천|나주|광양/],
   ["경북", /경북|경상북도|포항|경주|김천|안동|구미|영주|영천|상주|문경|경산/],
   ["경남", /경남|경상남도|창원|진주|통영|사천|김해|밀양|거제|양산/],
@@ -203,9 +203,9 @@ async function fetchPolicies(serviceKey, pages, perPage, maxItems) {
   const records = [...(Array.isArray(first.data) ? first.data : [])];
   const failedPages = [];
 
-  for (let start = 2; start <= pageCount; start += 8) {
+  for (let start = 2; start <= pageCount; start += 2) {
     const batch = [];
-    for (let page = start; page < start + 8 && page <= pageCount; page += 1) {
+    for (let page = start; page < start + 2 && page <= pageCount; page += 1) {
       batch.push(fetchPage(serviceKey, page, actualPerPage).then((body) => ({ body, page })).catch(() => ({ body: null, page })));
     }
     const bodies = await Promise.all(batch);

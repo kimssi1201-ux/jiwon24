@@ -32,6 +32,71 @@ const targetOptions = ["전체대상", "국가유공자·보훈", "장애인", "
 const qs = (selector) => document.querySelector(selector);
 const qsa = (selector) => [...document.querySelectorAll(selector)];
 
+function compactFilterValue(value) {
+  return String(value || "").trim().replace(/[·\s_-]/g, "");
+}
+
+function ageFilterFrom(value) {
+  const compact = compactFilterValue(value);
+  const aliases = {
+    전체연령: "전체연령",
+    영유아출산: "영유아·출산",
+    영유아: "영유아·출산",
+    출산: "영유아·출산",
+    아동청소년: "아동·청소년",
+    아동: "아동·청소년",
+    청소년: "아동·청소년",
+    청년: "청년",
+    중장년: "중장년",
+    어르신: "어르신",
+    노인: "어르신",
+  };
+  return aliases[compact] || "";
+}
+
+function targetFilterFrom(value) {
+  const raw = String(value || "").trim();
+  const compact = compactFilterValue(raw);
+  const aliases = {
+    전체대상: "전체대상",
+    국가유공자보훈: "국가유공자·보훈",
+    국가유공자: "국가유공자·보훈",
+    보훈: "국가유공자·보훈",
+    장애인: "장애인",
+    소상공인: "소상공인",
+    농어업인: "농어업인",
+    농업인: "농어업인",
+    어업인: "농어업인",
+    저소득층: "저소득층",
+    저소득: "저소득층",
+    신혼부부: "신혼부부",
+  };
+  return aliases[compact] || (targetOptions.includes(raw) ? raw : "");
+}
+
+function readCategoryFilters(sourceParams = params) {
+  const type = sourceParams.get("type") || "전체";
+  const region = sourceParams.get("region") || "전체지역";
+  const rawAge = sourceParams.get("age") || "";
+  const rawTarget = sourceParams.get("target") || "";
+  let age = ageFilterFrom(rawAge) || "전체연령";
+  let target = targetFilterFrom(rawTarget) || "전체대상";
+
+  const targetAsAge = ageFilterFrom(rawTarget);
+  if (targetAsAge && age === "전체연령") {
+    age = targetAsAge;
+    target = "전체대상";
+  }
+
+  return {
+    type,
+    region,
+    age,
+    target,
+    query: (sourceParams.get("q") || "").trim(),
+  };
+}
+
 function escapeHtml(value) {
   return String(value)
     .replaceAll("&", "&amp;")
@@ -55,12 +120,27 @@ function policyUrl(policy) {
 }
 
 function categoryUrl({
-  type = params.get("type") || "전체",
-  region = params.get("region") || "전체지역",
-  age = params.get("age") || "전체연령",
-  target = params.get("target") || "전체대상",
-  query = params.get("q") || "",
+  type,
+  region,
+  age,
+  target,
+  query,
 } = {}) {
+  const current = readCategoryFilters();
+  type = type ?? current.type;
+  region = region ?? current.region;
+  age = age ?? current.age;
+  target = target ?? current.target;
+  query = query ?? current.query;
+
+  const targetAsAge = ageFilterFrom(target);
+  if (targetAsAge && age === "전체연령") {
+    age = targetAsAge;
+    target = "전체대상";
+  }
+  age = ageFilterFrom(age) || age;
+  target = targetFilterFrom(target) || target;
+
   const nextParams = new URLSearchParams();
   if (type && type !== "전체") nextParams.set("type", type);
   if (region && region !== "전체지역") nextParams.set("region", region);
@@ -243,6 +323,7 @@ function showCategoryLoading() {
 
 async function loadLivePolicies() {
   if (!["home", "category", "policy"].includes(page)) return;
+  if (page === "category") return false;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 18000);
 
@@ -276,31 +357,25 @@ function renderHome() {
 }
 
 function filteredPolicies() {
-  const type = params.get("type") || "전체";
-  const region = params.get("region") || "전체지역";
-  const age = params.get("age") || "전체연령";
-  const target = params.get("target") || "전체대상";
-  const query = (params.get("q") || "").trim().toLowerCase();
+  const { type, region, age, target, query } = readCategoryFilters();
+  const normalizedQuery = query.toLowerCase();
   return policies.filter((policy) => {
     const typeMatch = type === "전체" || policy.type === type;
     const regionMatch = region === "전체지역" || policy.region === region;
     const ageMatch = age === "전체연령" || policyAgeGroups(policy).includes(age);
     const targetMatch = target === "전체대상" || policyTargetGroups(policy).includes(target);
     const queryMatch =
-      !query ||
-      policySearchText(policy).includes(query);
+      !normalizedQuery ||
+      policySearchText(policy).includes(normalizedQuery);
     return typeMatch && regionMatch && ageMatch && targetMatch && queryMatch;
   });
 }
 
 function renderCategory() {
-  const type = params.get("type") || "전체";
-  const region = params.get("region") || "전체지역";
-  const age = params.get("age") || "전체연령";
-  const target = params.get("target") || "전체대상";
-  const query = params.get("q") || "";
+  const { type, region, age, target, query } = readCategoryFilters();
   const list = filteredPolicies();
   const isFocusedSearch = query || region !== "전체지역" || age !== "전체연령" || target !== "전체대상" || type !== "전체";
+  const isCategoryDataLoading = isFocusedSearch && !list.length && !window.GG24_CATEGORY_FULL_LOAD_DONE;
   const displayLimit = query ? 300 : isFocusedSearch ? 180 : 80;
   const visibleList = list.slice(0, displayLimit);
   const titleParts = [];
@@ -309,7 +384,7 @@ function renderCategory() {
   if (target !== "전체대상") titleParts.push(target);
   if (type !== "전체") titleParts.push(type);
   qs("#categoryTitle").textContent = titleParts.length ? `${titleParts.join(" ")} 정보` : "정책 전체";
-  qs("#categoryCount").textContent = `${money.format(list.length)}개 결과`;
+  qs("#categoryCount").textContent = isCategoryDataLoading ? "불러오는 중" : `${money.format(list.length)}개 결과`;
   qs("#categorySearchInput").value = query;
   qsa("[data-type-filter]").forEach((link) => {
     link.classList.toggle("active", link.dataset.typeFilter === type);
@@ -336,11 +411,13 @@ function renderCategory() {
   const notice = qs("#resultNotice");
   if (notice) {
     notice.textContent =
-      list.length > visibleList.length
+      !isCategoryDataLoading && list.length > visibleList.length
         ? `${money.format(list.length)}개 중 ${money.format(visibleList.length)}개를 먼저 보여드려요. 지역명이나 대상 키워드를 더 넣으면 정확해집니다.`
         : "";
   }
-  qs("#policyList").innerHTML = visibleList.length
+  qs("#policyList").innerHTML = isCategoryDataLoading
+    ? `<div class="empty-card">조건에 맞는 정책을 불러오고 있습니다.</div>`
+    : visibleList.length
     ? visibleList.map(policyCard).join("")
     : `<div class="empty-card">조건에 맞는 정책이 없습니다. 지역이나 검색어를 넓혀보세요.</div>`;
 

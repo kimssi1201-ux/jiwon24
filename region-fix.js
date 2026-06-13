@@ -59,6 +59,65 @@
     return String(policy?.region || "").includes("전국");
   }
 
+  function compactFilterValue(value) {
+    return String(value || "").trim().replace(/[·\s_-]/g, "");
+  }
+
+  function ageFilterFrom(value) {
+    const aliases = {
+      전체연령: "전체연령",
+      영유아출산: "영유아·출산",
+      영유아: "영유아·출산",
+      출산: "영유아·출산",
+      아동청소년: "아동·청소년",
+      아동: "아동·청소년",
+      청소년: "아동·청소년",
+      청년: "청년",
+      중장년: "중장년",
+      어르신: "어르신",
+      노인: "어르신",
+    };
+    return aliases[compactFilterValue(value)] || "";
+  }
+
+  function targetFilterFrom(value) {
+    const aliases = {
+      전체대상: "전체대상",
+      국가유공자보훈: "국가유공자·보훈",
+      국가유공자: "국가유공자·보훈",
+      보훈: "국가유공자·보훈",
+      장애인: "장애인",
+      소상공인: "소상공인",
+      농어업인: "농어업인",
+      농업인: "농어업인",
+      어업인: "농어업인",
+      저소득층: "저소득층",
+      저소득: "저소득층",
+      신혼부부: "신혼부부",
+    };
+    return aliases[compactFilterValue(value)] || "";
+  }
+
+  function fallbackCategoryFilters(liveParams) {
+    const rawAge = liveParams.get("age") || "";
+    const rawTarget = liveParams.get("target") || "";
+    let age = ageFilterFrom(rawAge) || "전체연령";
+    let target = targetFilterFrom(rawTarget) || "전체대상";
+    const targetAsAge = ageFilterFrom(rawTarget);
+    if (targetAsAge && age === "전체연령") {
+      age = targetAsAge;
+      target = "전체대상";
+    }
+
+    return {
+      type: liveParams.get("type") || "전체",
+      region: liveParams.get("region") || "전체지역",
+      age,
+      target,
+      query: (liveParams.get("q") || "").trim(),
+    };
+  }
+
   function matchesRegion(policy, region) {
     if (region === "전체지역") return true;
     if (region === "전국") return isNationalPolicy(policy);
@@ -78,11 +137,12 @@
 
   filteredPolicies = function filteredPoliciesWithRegionFallback() {
     const liveParams = new URLSearchParams(location.search);
-    const type = liveParams.get("type") || "전체";
-    const region = liveParams.get("region") || "전체지역";
-    const age = liveParams.get("age") || "전체연령";
-    const target = liveParams.get("target") || "전체대상";
-    const query = (liveParams.get("q") || "").trim().toLowerCase();
+    const filters =
+      typeof readCategoryFilters === "function"
+        ? readCategoryFilters(liveParams)
+        : fallbackCategoryFilters(liveParams);
+    const { type, region, age, target } = filters;
+    const query = filters.query.toLowerCase();
 
     const list = policies.filter((policy) => {
       const typeMatch = type === "전체" || policy.type === type;

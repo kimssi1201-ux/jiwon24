@@ -24,6 +24,10 @@
   relabelNationalRegion();
   document.addEventListener("DOMContentLoaded", relabelNationalRegion);
 
-  const observer = new MutationObserver(relabelNationalRegion);
-  observer.observe(document.documentElement, { childList: true, subtree: true });
+  let runs = 0;
+  const timer = setInterval(() => {
+    relabelNationalRegion();
+    runs += 1;
+    if (runs >= 24) clearInterval(timer);
+  }, 500);
 })();

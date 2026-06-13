@@ -122,7 +122,14 @@
     .then((response) => (response.ok ? response.json() : null))
     .then((liveData) => {
       if (Array.isArray(liveData?.policies) && liveData.policies.length) {
-        render(liveData.policies);
+        const seen = new Set();
+        const merged = [...liveData.policies, ...initialPolicies].filter((policy) => {
+          const key = policy.id || policy.title;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+        render(merged);
       }
     })
     .catch(() => undefined);

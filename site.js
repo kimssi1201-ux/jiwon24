@@ -364,13 +364,19 @@ function detailRow(label, value) {
   `;
 }
 
-function renderPolicyDetail() {
+function renderPolicyDetail({ allowFallback = true, missingText = "정책 정보를 불러오는 중입니다." } = {}) {
   if (!policies.length) {
     qs("#policyDetail").innerHTML = `<div class="empty-card">표시할 정책 데이터가 없습니다.</div>`;
     return;
   }
-  const id = params.get("id") || policies[0].id;
-  const policy = policies.find((item) => item.id === id) || policies[0];
+  const requestedId = params.get("id");
+  const id = requestedId || policies[0].id;
+  const matchedPolicy = policies.find((item) => item.id === id);
+  const policy = matchedPolicy || (allowFallback ? policies[0] : null);
+  if (!policy) {
+    qs("#policyDetail").innerHTML = `<div class="empty-card">${escapeHtml(missingText)}</div>`;
+    return;
+  }
   const sourceUrl = safeUrl(policy.sourceUrl);
   const sourceAction = sourceUrl
     ? `<a class="primary-button" href="${sourceUrl}" target="_blank" rel="noopener">신청하기</a>`
@@ -453,12 +459,21 @@ async function init() {
   }
 
   if (page === "policy") {
-    renderPolicyDetail();
+    const hasRequestedId = Boolean(params.get("id"));
+    renderPolicyDetail({ allowFallback: !hasRequestedId });
     bindCommonActions();
     loadLivePolicies().then((updated) => {
       if (updated) {
-        renderPolicyDetail();
+        renderPolicyDetail({
+          allowFallback: !hasRequestedId,
+          missingText: "정책 정보를 찾을 수 없습니다. 목록에서 다시 검색해 주세요.",
+        });
         bindCommonActions();
+      } else if (hasRequestedId) {
+        renderPolicyDetail({
+          allowFallback: false,
+          missingText: "정책 정보를 찾을 수 없습니다. 목록에서 다시 검색해 주세요.",
+        });
       }
     });
     registerServiceWorker();

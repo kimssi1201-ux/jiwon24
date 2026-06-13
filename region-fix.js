@@ -23,6 +23,7 @@
 
   const staticPolicies = Array.isArray(window.GG24_DATA?.policies) ? window.GG24_DATA.policies : [];
   let fullPolicyLoadFinished = false;
+  window.GG24_CATEGORY_FULL_LOAD_DONE = false;
 
   function keyFor(policy) {
     return policy?.id || `${policy?.title || ""}-${policy?.institution || ""}`;
@@ -249,18 +250,24 @@
       });
 
       if (livePolicies.length) {
-        fullPolicyLoadFinished = true;
         policies = mergePolicies(livePolicies, staticPolicies);
-        renderCategory();
+        const filters = currentFilters();
+        if (isFocusedFilter(filters) && !filteredPolicies().length) {
+          showMergedLoading();
+        } else {
+          renderCategory();
+        }
       }
     }
 
     fullPolicyLoadFinished = true;
+    window.GG24_CATEGORY_FULL_LOAD_DONE = true;
     renderCategory();
   }
 
   loadPolicyChunks().catch(() => {
     fullPolicyLoadFinished = true;
+    window.GG24_CATEGORY_FULL_LOAD_DONE = true;
     renderCategory();
   });
 })();

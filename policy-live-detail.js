@@ -5,6 +5,7 @@
 
   let renderedPolicy = null;
   const staticPolicies = Array.isArray(window.GG24_DATA?.policies) ? window.GG24_DATA.policies : [];
+  const chunkStarts = [1, 6, 11, 16, 21, 26, 31, 36];
 
   function escapeHtml(value) {
     return String(value ?? "")
@@ -137,21 +138,37 @@
   }
 
   async function loadRequestedPolicy() {
+    if (!renderedPolicy) {
+      detail.innerHTML = `<div class="empty-card">정책 정보를 불러오는 중입니다.</div>`;
+    }
+
     try {
-      const response = await fetch("/api/policies?pages=40&perPage=500&maxItems=12000", {
-        headers: { Accept: "application/json" },
-        cache: "no-store",
-      });
-      if (!response.ok) return;
-      const liveData = await response.json();
-      const policy = Array.isArray(liveData.policies)
-        ? liveData.policies.find((item) => item.id === requestedId)
-        : null;
-      if (!policy) return;
-      renderPolicy(policy);
-      keepRenderedIfOverwritten();
+      for (let index = 0; index < chunkStarts.length; index += 2) {
+        const batch = chunkStarts.slice(index, index + 2).map((startPage) =>
+          fetch(`/api/policies?startPage=${startPage}&pages=5&perPage=500&maxItems=2500`, {
+            headers: { Accept: "application/json" },
+            cache: "no-store",
+          })
+            .then((response) => (response.ok ? response.json() : null))
+            .catch(() => null),
+        );
+        const chunks = await Promise.all(batch);
+        const policy = chunks
+          .flatMap((liveData) => (Array.isArray(liveData?.policies) ? liveData.policies : []))
+          .find((item) => item.id === requestedId);
+
+        if (policy) {
+          renderPolicy(policy);
+          keepRenderedIfOverwritten();
+          return;
+        }
+      }
     } catch {
       // The main detail renderer keeps the existing fallback message.
+    }
+
+    if (!renderedPolicy) {
+      detail.innerHTML = `<div class="empty-card">정책 정보를 찾을 수 없습니다. 목록에서 다시 검색해 주세요.</div>`;
     }
   }
 

@@ -193,19 +193,20 @@ async function fetchFirstPage(serviceKey, perPage) {
   throw lastError;
 }
 
-async function fetchPolicies(serviceKey, pages, perPage, maxItems) {
+async function fetchPolicies(serviceKey, pages, perPage, maxItems, startPage = 1) {
   const firstPage = await fetchFirstPage(serviceKey, perPage);
   const first = firstPage.body;
   const actualPerPage = firstPage.perPage;
   const totalCount = Number(first.totalCount || first.matchCount || 0);
   const totalPages = Math.max(1, Math.ceil(totalCount / actualPerPage));
-  const pageCount = Math.min(pages, totalPages);
-  const records = [...(Array.isArray(first.data) ? first.data : [])];
+  const safeStartPage = Math.max(1, Math.min(startPage, totalPages));
+  const endPage = Math.min(totalPages, safeStartPage + pages - 1);
+  const records = safeStartPage === 1 ? [...(Array.isArray(first.data) ? first.data : [])] : [];
   const failedPages = [];
 
-  for (let start = 2; start <= pageCount; start += 2) {
+  for (let start = safeStartPage === 1 ? 2 : safeStartPage; start <= endPage; start += 2) {
     const batch = [];
-    for (let page = start; page < start + 2 && page <= pageCount; page += 1) {
+    for (let page = start; page < start + 2 && page <= endPage; page += 1) {
       batch.push(fetchPage(serviceKey, page, actualPerPage).then((body) => ({ body, page })).catch(() => ({ body: null, page })));
     }
     const bodies = await Promise.all(batch);
@@ -232,6 +233,8 @@ async function fetchPolicies(serviceKey, pages, perPage, maxItems) {
       url: "https://www.data.go.kr/data/15113968/openapi.do",
       endpoint: ENDPOINT,
       totalCount,
+      startPage: safeStartPage,
+      pageCount: endPage - safeStartPage + 1,
       fetchedRecords: records.length,
       failedPages,
     },
@@ -247,9 +250,10 @@ export async function onRequestGet({ request, env }) {
   const pages = numberParam(url.searchParams, "pages", 8, 1, 40);
   const perPage = numberParam(url.searchParams, "perPage", 300, 50, 1000);
   const maxItems = numberParam(url.searchParams, "maxItems", 2400, 100, 12000);
+  const startPage = numberParam(url.searchParams, "startPage", 1, 1, 40);
 
   try {
-    const payload = await fetchPolicies(serviceKey, pages, perPage, maxItems);
+    const payload = await fetchPolicies(serviceKey, pages, perPage, maxItems, startPage);
     return Response.json(payload, {
       headers: {
         "Cache-Control": "public, max-age=0, s-maxage=1800, stale-while-revalidate=3600",

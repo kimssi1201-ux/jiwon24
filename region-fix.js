@@ -1,5 +1,6 @@
 (() => {
   if (document.body.dataset.page !== "category") return;
+  window.GG24_REGION_FIX_VERSION = "16";
 
   const regionAliases = {
     서울: ["서울", "서울특별시"],
@@ -296,7 +297,41 @@
     }
   }
 
+  async function fetchRegionPolicies(region) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 26000);
+
+    try {
+      const response = await fetch(
+        `/api/policies?region=${encodeURIComponent(region)}&pages=40&perPage=500&maxItems=2500`,
+        {
+          headers: { Accept: "application/json" },
+          cache: "no-store",
+          signal: controller.signal,
+        },
+      );
+      return response.ok ? response.json() : null;
+    } catch {
+      return null;
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
   async function loadPolicyChunks() {
+    const initialFilters = currentFilters();
+    if (initialFilters.region !== "전체지역" && initialFilters.region !== "전국") {
+      showMergedLoading();
+      const regionalData = await fetchRegionPolicies(initialFilters.region);
+      if (Array.isArray(regionalData?.policies) && regionalData.policies.length) {
+        policies = mergePolicies(regionalData.policies, policies, staticPolicies);
+        fullPolicyLoadFinished = true;
+        window.GG24_CATEGORY_FULL_LOAD_DONE = true;
+        renderCategory();
+        return;
+      }
+    }
+
     const chunkStarts = [1, 16, 6, 21, 11, 26, 31, 36];
     let livePolicies = [];
 

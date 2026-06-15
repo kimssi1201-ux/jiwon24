@@ -1,4 +1,4 @@
-const CACHE_NAME = "gov-support25-site-v65";
+const CACHE_NAME = "gov-support25-site-v66";
 const ASSETS = [
   "./",
   "./index.html",
@@ -21,7 +21,7 @@ const ASSETS = [
   "./age-merge-fix.js?v=1",
   "./target-foreigner-fix.js?v=2",
   "./region-label-fix.js?v=3",
-  "./category-match-fix.js?v=4",
+  "./category-match-fix.js?v=5",
   "./manifest.webmanifest",
   "./assets/claim-desk-hero.svg",
   "./assets/hero-phone-main.jpg?v=1",
@@ -64,6 +64,13 @@ self.addEventListener("fetch", (event) => {
     url.pathname.endsWith("/site.js") ||
     url.pathname.endsWith("/site-data.js") ||
     url.pathname.endsWith("/deadline.js") ||
+    url.pathname.endsWith("/search-fix.js") ||
+    url.pathname.endsWith("/region-fix.js") ||
+    url.pathname.endsWith("/age-merge-fix.js") ||
+    url.pathname.endsWith("/target-foreigner-fix.js") ||
+    url.pathname.endsWith("/region-label-fix.js") ||
+    url.pathname.endsWith("/category-match-fix.js") ||
+    url.pathname.endsWith("/policy-live-detail.js") ||
     event.request.mode === "navigate";
 
   if (networkFirst) {

@@ -1,5 +1,6 @@
 (() => {
   if (document.body.dataset.page !== "category") return;
+  window.GG24_MATCH_FIX_VERSION = "5";
 
   const directSmallBusinessPattern =
     /소상공인|소공인|전통시장|시장상인|상인회|개인사업자|자영업|가맹점|상권|점포/;

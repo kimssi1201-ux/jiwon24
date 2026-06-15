@@ -65,6 +65,16 @@
     return String(policy?.region || "").trim();
   }
 
+  function isGyeonggiGwangjuPolicy(policy) {
+    const source = regionSource(policy);
+    return /경기도\s*광주시|경기도광주시/.test(source);
+  }
+
+  function isGwangjuMetroPolicy(policy) {
+    const source = regionSource(policy);
+    return /광주광역시|광주광역시교육청/.test(source) || ((policy?.tags || []).includes("광역시도") && /광주/.test(source));
+  }
+
   function preciseAliasMatch(source, alias) {
     const text = String(source || "");
     if (!alias) return false;
@@ -182,6 +192,8 @@
     if (region === "전체지역") return true;
     if (region === "전국") return isNationalPolicy(policy);
     if (isNationalPolicy(policy)) return true;
+    if (region === "광주" && isGyeonggiGwangjuPolicy(policy)) return false;
+    if (region === "경기" && isGyeonggiGwangjuPolicy(policy)) return true;
 
     const explicitRegion = policyRegion(policy);
     const aliases = aliasesFor(region);
@@ -196,6 +208,9 @@
   function regionPriority(policy, region) {
     if (region === "전체지역" || region === "전국") return 0;
     if (isNationalPolicy(policy)) return 1;
+    if (region === "광주" && isGyeonggiGwangjuPolicy(policy)) return 2;
+    if (region === "광주" && isGwangjuMetroPolicy(policy)) return 0;
+    if (region === "경기" && isGyeonggiGwangjuPolicy(policy)) return 0;
     const source = regionSource(policy);
     const explicitRegion = policyRegion(policy);
     const aliases = aliasesFor(region);
@@ -207,6 +222,15 @@
       return 0;
     }
     return 2;
+  }
+
+  function hasLocalRegionResult(list, region) {
+    if (region === "전체지역" || region === "전국") return true;
+    return list.some((policy) => !isNationalPolicy(policy) && regionPriority(policy, region) === 0);
+  }
+
+  function shouldKeepRegionalLoading(filters, list) {
+    return !fullPolicyLoadFinished && filters.region !== "전체지역" && filters.region !== "전국" && !hasLocalRegionResult(list, filters.region);
   }
 
   filteredPolicies = function filteredPoliciesWithRegionFallback() {
@@ -241,7 +265,8 @@
   function renderMergedStaticPolicies() {
     policies = mergePolicies(policies, staticPolicies);
     const filters = currentFilters();
-    if (!fullPolicyLoadFinished && isFocusedFilter(filters) && !filteredPolicies().length) {
+    const list = filteredPolicies();
+    if (!fullPolicyLoadFinished && isFocusedFilter(filters) && (!list.length || shouldKeepRegionalLoading(filters, list))) {
       showMergedLoading();
       return;
     }
@@ -287,7 +312,8 @@
       if (livePolicies.length) {
         policies = mergePolicies(livePolicies, staticPolicies);
         const filters = currentFilters();
-        if (isFocusedFilter(filters) && !filteredPolicies().length) {
+        const list = filteredPolicies();
+        if (isFocusedFilter(filters) && (!list.length || shouldKeepRegionalLoading(filters, list))) {
           showMergedLoading();
         } else {
           renderCategory();

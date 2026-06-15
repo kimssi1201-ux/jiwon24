@@ -21,13 +21,20 @@
   window.policyTargetGroups = function policyTargetGroupsWithForeigner(policy) {
     const groups = new Set(previousPolicyTargetGroups ? previousPolicyTargetGroups(policy) : []);
     const source = typeof window.policySearchText === "function" ? window.policySearchText(policy) : JSON.stringify(policy || {});
-
-    if (
-      /외국인|외국인주민|등록외국인|외국인등록|외국국적동포|거소등록|다문화|결혼이민|이주민|중도입국|난민|귀화|국적취득|새터민|북한이탈주민/.test(
+    const hasPositiveSignal =
+      /다문화|결혼이민|이주민|중도입국|난민|귀화|국적취득|새터민|북한이탈주민|외국인주민|외국인 주민|등록외국인|등록 외국인|외국인등록|외국인 등록|외국국적동포|외국 국적 동포|거소등록|거소 등록|내외국인|외국인\s*(?:포함|대상|지원|주민|유아|아동|청소년|근로|산모|임산부)|외국인(?:도|은|을|이)?\s*포함|체류지\s*등록[^。\n.]{0,40}외국인/.test(
         source,
-      )
-    ) {
+      );
+    const hasExclusionSignal =
+      /외국인[^。\n.]{0,80}(제외|불가|아님|지원대상 아님|참여 불가|신청불가)|재외국인[^。\n.]{0,60}(제외|불가|신청불가|아님)|재외국민[^。\n.]{0,60}(제외|불가|신청불가|아님)|제외대상[^。\n.]{0,100}외국인|부부 모두 외국인(?:인 경우)?\s*(?:제외|불가)/.test(
+        source,
+      );
+
+    if (hasPositiveSignal || (/외국인/.test(source) && !hasExclusionSignal)) {
       groups.add(foreignerTarget);
+    }
+    if (hasExclusionSignal && !hasPositiveSignal) {
+      groups.delete(foreignerTarget);
     }
 
     return [...groups];

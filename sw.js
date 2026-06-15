@@ -1,4 +1,4 @@
-const CACHE_NAME = "gov-support25-site-v67";
+const CACHE_NAME = "gov-support25-site-v68";
 const ASSETS = [
   "./",
   "./index.html",
@@ -7,7 +7,7 @@ const ASSETS = [
   "./about.html",
   "./terms.html",
   "./privacy.html",
-  "./styles.css?v=7",
+  "./styles.css?v=8",
   "./desktop.css",
   "./home-focus.css?v=1",
   "./deadline.js?v=2",
@@ -15,6 +15,7 @@ const ASSETS = [
   "./deadline.js?v=4",
   "./deadline.js?v=5",
   "./policy-live-detail.js?v=6",
+  "./app-shell.js?v=1",
   "./search-fix.js?v=2",
   "./click-snapshot.js?v=1",
   "./region-fix.js?v=14",
@@ -40,6 +41,9 @@ const ASSETS = [
   "./assets/illustration-loan.svg",
   "./assets/icon-government-support25.svg?v=2",
   "./assets/logo-government-support25.svg?v=3",
+  "./assets/app-icon-192.png?v=1",
+  "./assets/app-icon-512.png?v=1",
+  "./assets/app-icon-maskable-512.png?v=1",
 ];
 
 self.addEventListener("install", (event) => {
@@ -63,6 +67,7 @@ self.addEventListener("fetch", (event) => {
     url.pathname.startsWith("/api/") ||
     url.pathname.endsWith("/site.js") ||
     url.pathname.endsWith("/site-data.js") ||
+    url.pathname.endsWith("/app-shell.js") ||
     url.pathname.endsWith("/deadline.js") ||
     url.pathname.endsWith("/search-fix.js") ||
     url.pathname.endsWith("/region-fix.js") ||

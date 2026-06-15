@@ -1,6 +1,6 @@
 (() => {
   if (document.body.dataset.page !== "category") return;
-  window.GG24_MATCH_FIX_VERSION = "5";
+  window.GG24_MATCH_FIX_VERSION = "6";
 
   const directSmallBusinessPattern =
     /소상공인|소공인|전통시장|시장상인|상인회|개인사업자|자영업|가맹점|상권|점포/;
@@ -59,10 +59,61 @@
     document.querySelector('[data-region-filter="전국"]')?.remove();
   }
 
+  function regionSource(policy) {
+    return [
+      policy?.region,
+      policy?.institution,
+      policy?.target,
+      policy?.summary,
+      policy?.method,
+      (policy?.tags || []).join(" "),
+    ]
+      .filter(Boolean)
+      .join(" ");
+  }
+
+  function isNationalPolicy(policy) {
+    return String(policy?.region || "").includes("전국");
+  }
+
+  function isGyeonggiGwangjuPolicy(policy) {
+    return /경기도\s*광주시|경기도광주시/.test(regionSource(policy));
+  }
+
+  function isGwangjuMetroPolicy(policy) {
+    const source = regionSource(policy);
+    return /광주광역시|광주광역시교육청/.test(source) || ((policy?.tags || []).includes("광역시도") && /광주/.test(source));
+  }
+
+  function isLocalPolicyForRegion(policy, region) {
+    if (!policy || isNationalPolicy(policy)) return false;
+    const source = regionSource(policy);
+    if (region === "광주") return isGwangjuMetroPolicy(policy) && !isGyeonggiGwangjuPolicy(policy);
+    if (region === "경기" && isGyeonggiGwangjuPolicy(policy)) return true;
+    return String(policy.region || "").trim() === region || source.includes(region);
+  }
+
+  function showRegionalLoading() {
+    const count = document.querySelector("#categoryCount");
+    const list = document.querySelector("#policyList");
+    const notice = document.querySelector("#resultNotice");
+    if (count) count.textContent = "불러오는 중";
+    if (notice) notice.textContent = "";
+    if (list) list.innerHTML = `<div class="empty-card">조건에 맞는 정책을 불러오고 있습니다.</div>`;
+  }
+
+  function shouldHoldRegionalLoading() {
+    const filters = readCategoryFilters();
+    if (window.GG24_CATEGORY_FULL_LOAD_DONE) return false;
+    if (filters.region === "전체지역" || filters.region === "전국") return false;
+    return !filteredPolicies().some((policy) => isLocalPolicyForRegion(policy, filters.region));
+  }
+
   const previousRenderCategory = renderCategory;
   renderCategory = function renderCategoryWithMatchCleanup(...args) {
     const result = previousRenderCategory(...args);
     removeNationalRegionButton();
+    if (shouldHoldRegionalLoading()) showRegionalLoading();
     return result;
   };
 

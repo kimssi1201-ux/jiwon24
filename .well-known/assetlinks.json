@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "kr.co.jiwon24.allday",
+      "sha256_cert_fingerprints": [
+        "96:68:8F:17:35:5B:A7:D0:12:D5:68:B0:E4:66:FA:A4:BC:C7:5A:F2:53:58:27:65:A4:4E:AE:B4:C9:68:42:54"
+      ]
+    }
+  }
+]

@@ -1,6 +1,6 @@
 (() => {
   if (document.body.dataset.page !== "category") return;
-  window.GG24_MATCH_FIX_VERSION = "6";
+  window.GG24_MATCH_FIX_VERSION = "7";
 
   const directSmallBusinessPattern =
     /소상공인|소공인|전통시장|시장상인|상인회|개인사업자|자영업|가맹점|상권|점포/;
@@ -149,9 +149,41 @@
     }
   }
 
+  async function fetchRegionPolicies(region) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 26000);
+    try {
+      const response = await fetch(
+        `/api/policies?region=${encodeURIComponent(region)}&pages=40&perPage=500&maxItems=2500`,
+        {
+          headers: { Accept: "application/json" },
+          cache: "no-store",
+          signal: controller.signal,
+        },
+      );
+      return response.ok ? response.json() : null;
+    } catch {
+      return null;
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
   async function loadPriorityChunks() {
     if (window.GG24_MATCH_FIX_LOADING) return;
     window.GG24_MATCH_FIX_LOADING = true;
+    const filters = readCategoryFilters();
+    if (filters.region !== "전체지역" && filters.region !== "전국") {
+      showRegionalLoading();
+      const regionalData = await fetchRegionPolicies(filters.region);
+      if (Array.isArray(regionalData?.policies) && regionalData.policies.length) {
+        policies = mergePolicies(regionalData.policies, policies);
+        window.GG24_CATEGORY_FULL_LOAD_DONE = true;
+        renderCategory();
+        return;
+      }
+    }
+
     const starts = [1, 16, 6, 21, 11, 26, 31, 36];
     let livePolicies = [];
 

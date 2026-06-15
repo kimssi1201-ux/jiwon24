@@ -97,9 +97,10 @@
       아동: "아동·청소년",
       청소년: "아동·청소년",
       청년: "청년",
-      중장년: "중장년",
-      어르신: "어르신",
-      노인: "어르신",
+      중장년: "중장년·어르신",
+      어르신: "중장년·어르신",
+      노인: "중장년·어르신",
+      중장년어르신: "중장년·어르신",
     };
     return aliases[compactFilterValue(value)] || "";
   }
@@ -118,6 +119,15 @@
       저소득층: "저소득층",
       저소득: "저소득층",
       신혼부부: "신혼부부",
+      외국인다문화: "외국인·다문화",
+      외국인: "외국인·다문화",
+      외국인주민: "외국인·다문화",
+      등록외국인: "외국인·다문화",
+      다문화: "외국인·다문화",
+      다문화가족: "외국인·다문화",
+      결혼이민자: "외국인·다문화",
+      이주민: "외국인·다문화",
+      난민: "외국인·다문화",
     };
     return aliases[compactFilterValue(value)] || "";
   }
@@ -135,7 +145,7 @@
 
     return {
       type: liveParams.get("type") || "전체",
-      region: liveParams.get("region") || "전체지역",
+      region: liveParams.get("region") === "전국" ? "전체지역" : liveParams.get("region") || "전체지역",
       age,
       target,
       query: (liveParams.get("q") || "").trim(),
@@ -171,21 +181,31 @@
   function matchesRegion(policy, region) {
     if (region === "전체지역") return true;
     if (region === "전국") return isNationalPolicy(policy);
-    if (hasConflictingLocalRegion(policy, region)) return false;
     if (isNationalPolicy(policy)) return true;
 
     const explicitRegion = policyRegion(policy);
-    if (explicitRegion) return explicitRegion === region;
-
+    const aliases = aliasesFor(region);
+    if (explicitRegion) {
+      return explicitRegion === region || aliases.some((alias) => preciseAliasMatch(explicitRegion, alias));
+    }
+    if (hasConflictingLocalRegion(policy, region)) return false;
     const source = regionSource(policy);
-    return aliasesFor(region).some((alias) => preciseAliasMatch(source, alias));
+    return aliases.some((alias) => preciseAliasMatch(source, alias));
   }
 
   function regionPriority(policy, region) {
     if (region === "전체지역" || region === "전국") return 0;
     if (isNationalPolicy(policy)) return 1;
     const source = regionSource(policy);
-    if (policyRegion(policy) === region || aliasesFor(region).some((alias) => preciseAliasMatch(source, alias))) return 0;
+    const explicitRegion = policyRegion(policy);
+    const aliases = aliasesFor(region);
+    if (
+      explicitRegion === region ||
+      aliases.some((alias) => preciseAliasMatch(explicitRegion, alias)) ||
+      aliases.some((alias) => preciseAliasMatch(source, alias))
+    ) {
+      return 0;
+    }
     return 2;
   }
 
@@ -233,19 +253,30 @@
     setTimeout(renderMergedStaticPolicies, delay);
   });
 
+  async function fetchPolicyChunk(startPage) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 7000);
+
+    try {
+      const response = await fetch(`/api/policies?startPage=${startPage}&pages=5&perPage=500&maxItems=2500`, {
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+        signal: controller.signal,
+      });
+      return response.ok ? response.json() : null;
+    } catch {
+      return null;
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
   async function loadPolicyChunks() {
-    const chunkStarts = [1, 6, 11, 16, 21, 26, 31, 36];
+    const chunkStarts = [1, 16, 6, 21, 11, 26, 31, 36];
     let livePolicies = [];
 
     for (let index = 0; index < chunkStarts.length; index += 2) {
-      const batch = chunkStarts.slice(index, index + 2).map((startPage) =>
-        fetch(`/api/policies?startPage=${startPage}&pages=5&perPage=500&maxItems=2500`, {
-          headers: { Accept: "application/json" },
-          cache: "no-store",
-        })
-          .then((response) => (response.ok ? response.json() : null))
-          .catch(() => null),
-      );
+      const batch = chunkStarts.slice(index, index + 2).map(fetchPolicyChunk);
       const chunks = await Promise.all(batch);
       chunks.forEach((liveData) => {
         if (Array.isArray(liveData?.policies) && liveData.policies.length) {

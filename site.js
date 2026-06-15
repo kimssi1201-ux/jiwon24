@@ -26,11 +26,12 @@ const regionOptions = [
   "경남",
   "제주",
 ];
-const ageOptions = ["전체연령", "영유아·출산", "아동·청소년", "청년", "중장년", "어르신"];
-const targetOptions = ["전체대상", "국가유공자·보훈", "장애인", "소상공인", "농어업인", "저소득층", "신혼부부"];
+const ageOptions = ["전체연령", "영유아·출산", "아동·청소년", "청년", "중장년·어르신"];
+const targetOptions = ["전체대상", "국가유공자·보훈", "장애인", "소상공인", "농어업인", "저소득층", "신혼부부", "외국인·다문화"];
 
 const qs = (selector) => document.querySelector(selector);
 const qsa = (selector) => [...document.querySelectorAll(selector)];
+const policySnapshotKey = "GG24_LAST_POLICY_DETAIL";
 
 function compactFilterValue(value) {
   return String(value || "").trim().replace(/[·\s_-]/g, "");
@@ -47,9 +48,10 @@ function ageFilterFrom(value) {
     아동: "아동·청소년",
     청소년: "아동·청소년",
     청년: "청년",
-    중장년: "중장년",
-    어르신: "어르신",
-    노인: "어르신",
+    중장년: "중장년·어르신",
+    어르신: "중장년·어르신",
+    노인: "중장년·어르신",
+    중장년어르신: "중장년·어르신",
   };
   return aliases[compact] || "";
 }
@@ -70,6 +72,15 @@ function targetFilterFrom(value) {
     저소득층: "저소득층",
     저소득: "저소득층",
     신혼부부: "신혼부부",
+    외국인다문화: "외국인·다문화",
+    외국인: "외국인·다문화",
+    외국인주민: "외국인·다문화",
+    등록외국인: "외국인·다문화",
+    다문화: "외국인·다문화",
+    다문화가족: "외국인·다문화",
+    결혼이민자: "외국인·다문화",
+    이주민: "외국인·다문화",
+    난민: "외국인·다문화",
   };
   return aliases[compact] || (targetOptions.includes(raw) ? raw : "");
 }
@@ -117,6 +128,22 @@ function safeUrl(value) {
 
 function policyUrl(policy) {
   return `policy.html?id=${encodeURIComponent(policy.id)}`;
+}
+
+function rememberPolicySnapshot(policy) {
+  if (!policy?.id) return;
+  try {
+    sessionStorage.setItem(
+      policySnapshotKey,
+      JSON.stringify({
+        id: policy.id,
+        savedAt: Date.now(),
+        policy,
+      }),
+    );
+  } catch {
+    // Detail pages can still fall back to API lookup.
+  }
 }
 
 function categoryUrl({
@@ -167,6 +194,141 @@ function policySearchText(policy) {
     .toLowerCase();
 }
 
+function compactSearchValue(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[·ㆍ・\s_-]/g, "")
+    .replace(/[^0-9a-z가-힣]/g, "");
+}
+
+const genericSearchTokens = new Set([
+  "정책",
+  "정책검색",
+  "정책정보",
+  "검색",
+  "검색결과",
+  "정보",
+  "관련",
+  "보기",
+  "찾기",
+  "찾아줘",
+  "알려줘",
+  "보여줘",
+]);
+
+const searchRegionAliases = {
+  서울: ["서울", "서울특별시"],
+  경기: ["경기", "경기도", "수원", "성남", "고양", "용인", "부천", "화성", "남양주", "안양", "평택", "파주", "김포", "광명", "광주시"],
+  인천: ["인천", "인천광역시"],
+  부산: ["부산", "부산광역시", "해운대", "해운대구"],
+  대구: ["대구", "대구광역시"],
+  광주: ["광주광역시"],
+  대전: ["대전", "대전광역시"],
+  울산: ["울산", "울산광역시"],
+  세종: ["세종", "세종특별자치시"],
+  강원: ["강원", "강원특별자치도", "춘천", "원주", "강릉", "동해", "속초", "삼척"],
+  충북: ["충북", "충청북도", "청주", "충주", "제천"],
+  충남: ["충남", "충청남도", "천안", "공주", "아산", "서산", "논산", "계룡", "당진", "태안", "홍성"],
+  전북: ["전북", "전라북도", "전북특별자치도", "전주", "군산", "익산", "정읍", "남원", "김제"],
+  전남: ["전남", "전라남도", "목포", "여수", "순천", "나주", "광양"],
+  경북: ["경북", "경상북도", "포항", "경주", "김천", "안동", "구미", "영주", "영천", "상주", "문경", "경산"],
+  경남: ["경남", "경상남도", "창원", "진주", "통영", "사천", "김해", "밀양", "거제", "양산"],
+  제주: ["제주", "제주특별자치도"],
+};
+
+function preciseSearchAliasMatch(source, alias) {
+  const text = String(source || "");
+  if (!alias) return false;
+  if (alias.length >= 4) return text.includes(alias);
+
+  const escaped = alias.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const pattern = new RegExp(`(^|[^가-힣])${escaped}($|[^가-힣])|${escaped}(광역시|특별시|특별자치시|특별자치도|자치도|도|시|군|구)`);
+  return pattern.test(text);
+}
+
+function policyRegionSearchText(policy) {
+  return [
+    policy?.region,
+    policy?.institution,
+    policy?.target,
+    policy?.summary,
+    policy?.method,
+    (policy?.tags || []).join(" "),
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+function queryRegionHints(query) {
+  const compactQuery = compactSearchValue(query);
+  const spacedTokens = String(query || "")
+    .split(/[\s,./|]+/)
+    .map(compactSearchValue)
+    .filter(Boolean);
+
+  return regionOptions
+    .filter((region) => !region.startsWith("전체"))
+    .filter((region) => {
+      const compactRegion = compactSearchValue(region);
+      return spacedTokens.includes(compactRegion) || compactQuery.startsWith(compactRegion);
+    });
+}
+
+function policyMatchesRegionHint(policy, region) {
+  if (region === "전국") return String(policy?.region || "").includes("전국");
+  if (String(policy?.region || "").includes("전국")) return true;
+  if (String(policy?.region || "").trim() === region) return true;
+  const aliases = searchRegionAliases[region] || [region];
+  return aliases.some((alias) => preciseSearchAliasMatch(policyRegionSearchText(policy), alias));
+}
+
+function queryTokens(query) {
+  const compactQuery = compactSearchValue(query);
+  const regionHints = queryRegionHints(query).map(compactSearchValue);
+  const spacedTokens = String(query || "")
+    .split(/[\s,./|]+/)
+    .map(compactSearchValue)
+    .filter((token) => token && !genericSearchTokens.has(token) && !regionHints.includes(token));
+  const knownTokens = [
+    ...ageOptions,
+    ...targetOptions,
+    "지원금",
+    "환급금",
+    "대출",
+  ]
+    .map(compactSearchValue)
+    .filter((token) => token && !token.startsWith("전체") && compactQuery.includes(token));
+  const tokens = knownTokens.length ? [...spacedTokens, ...knownTokens] : spacedTokens;
+  return [...new Set(tokens.filter((token) => token && !genericSearchTokens.has(token)))];
+}
+
+function policyMatchesQuery(policy, query) {
+  const rawQuery = String(query || "").trim();
+  if (!rawQuery) return true;
+
+  const regionHints = queryRegionHints(rawQuery);
+  if (regionHints.length && !regionHints.every((region) => policyMatchesRegionHint(policy, region))) {
+    return false;
+  }
+
+  const source = policySearchText(policy);
+  const lowerQuery = rawQuery.toLowerCase();
+  if (source.includes(lowerQuery)) return true;
+
+  const enrichedSource = [
+    source,
+    policy.type,
+    policyAgeGroups(policy).join(" "),
+    policyTargetGroups(policy).join(" "),
+  ].join(" ");
+  const compactSource = compactSearchValue(enrichedSource);
+  const compactQuery = compactSearchValue(rawQuery);
+  if (compactQuery && compactSource.includes(compactQuery)) return true;
+
+  const tokens = queryTokens(rawQuery);
+  return tokens.length ? tokens.every((token) => compactSource.includes(token)) : false;
+}
+
 function policyAgeGroups(policy) {
   const source = policySearchText(policy);
   const groups = new Set();
@@ -174,17 +336,35 @@ function policyAgeGroups(policy) {
   if (/영유아|영아|유아|신생아|출산|출생|임산부|임신|산모|육아|보육|어린이집|태아|난임|다자녀|양육/.test(source)) {
     groups.add("영유아·출산");
   }
-  if (/아동|어린이|청소년|초등|중등|중학생|고등|고등학생|학생|입학|학습|장학|교복|만\s?(?:6|7|8|9|10|11|12|13|14|15|16|17)세/.test(source)) {
+  if (/아동|어린이|청소년|초등|초등학생|중등|중학생|고등|고등학생|학교\s?밖|입학준비|입학축하|학습지원|교복|만\s?(?:6|7|8|9|10|11|12|13|14|15|16|17)세/.test(source)) {
     groups.add("아동·청소년");
   }
-  if (/청년|대학생|취업준비|미취업|구직|사회초년|신혼|만\s?(?:18|19|2[0-9]|3[0-9])세/.test(source)) {
+  if (
+    groups.has("아동·청소년") &&
+    /제외[^。\n.]{0,100}(청소년쉼터|노숙인 자활시설)/.test(source) &&
+    !/아동|어린이|청소년|초등|중등|고등|입학|학습|교복/.test(
+      [policy.title, policy.summary].join(" ").toLowerCase(),
+    )
+  ) {
+    groups.delete("아동·청소년");
+  }
+  if (
+    groups.has("아동·청소년") &&
+    /대학생|장애대학|대학교|대학원|대학에/.test(source) &&
+    !/아동|어린이|청소년|초등|중등|중학생|고등|고등학생|만\s?(?:6|7|8|9|10|11|12|13|14|15|16|17)세/.test(
+      source,
+    )
+  ) {
+    groups.delete("아동·청소년");
+  }
+  if (/청년|대학생|취업준비|미취업|구직|사회초년|만\s?(?:18|19|2[0-9]|3[0-9])세/.test(source)) {
     groups.add("청년");
   }
   if (/중장년|중년|장년|신중년|경력단절|재취업|만\s?(?:4[0-9]|5[0-9]|6[0-4])세/.test(source)) {
-    groups.add("중장년");
+    groups.add("중장년·어르신");
   }
   if (/어르신|노인|고령|경로|독거노인|기초연금|장수|효도|효행|65세|70세|75세|80세|만\s?(?:6[5-9]|[789][0-9])세/.test(source)) {
-    groups.add("어르신");
+    groups.add("중장년·어르신");
   }
 
   return [...groups];
@@ -200,7 +380,7 @@ function policyTargetGroups(policy) {
   if (/장애인|장애아|장애정도|발달장애|중증장애|장애수당|장애연금|장애인복지/.test(source)) {
     groups.add("장애인");
   }
-  if (/소상공인|자영업|소기업|전통시장|상인|창업|폐업|사업자|중소기업/.test(source)) {
+  if (/소상공인|소공인|전통시장|시장상인|상인회|폐업|개인사업자|예비창업자|창업자금|창업지원금|사업화 자금/.test(source)) {
     groups.add("소상공인");
   }
   if (/농업|농가|농민|어업|어민|임업|축산|귀농|귀어|농어업|농촌|어촌|경영체/.test(source)) {
@@ -209,8 +389,22 @@ function policyTargetGroups(policy) {
   if (/저소득|기초생활|수급자|차상위|한부모|취약계층|중위소득|생계급여|의료급여|주거급여/.test(source)) {
     groups.add("저소득층");
   }
-  if (/신혼|혼인|결혼|예비부부|부부|전세자금|주택자금|임차보증금/.test(source)) {
+  if (/신혼|혼인|결혼|예비부부/.test(source)) {
     groups.add("신혼부부");
+  }
+  const hasForeignerPositiveSignal =
+    /다문화|결혼이민|이주민|중도입국|난민|귀화|국적취득|새터민|북한이탈주민|외국인주민|외국인 주민|등록외국인|등록 외국인|외국인등록|외국인 등록|외국국적동포|외국 국적 동포|거소등록|거소 등록|내외국인|외국인\s*(?:포함|대상|지원|주민|유아|아동|청소년|근로|산모|임산부)|외국인(?:도|은|을|이)?\s*포함|체류지\s*등록[^。\n.]{0,40}외국인/.test(
+      source,
+    );
+  const hasForeignerExclusionSignal =
+    /외국인[^。\n.]{0,80}(제외|불가|아님|지원대상 아님|참여 불가|신청불가)|재외국인[^。\n.]{0,60}(제외|불가|신청불가|아님)|재외국민[^。\n.]{0,60}(제외|불가|신청불가|아님)|제외대상[^。\n.]{0,100}외국인|부부 모두 외국인(?:인 경우)?\s*(?:제외|불가)/.test(
+      source,
+    );
+  if (hasForeignerPositiveSignal || (/외국인/.test(source) && !hasForeignerExclusionSignal)) {
+    groups.add("외국인·다문화");
+  }
+  if (hasForeignerExclusionSignal && !hasForeignerPositiveSignal) {
+    groups.delete("외국인·다문화");
   }
 
   return [...groups];
@@ -301,6 +495,20 @@ function bindCommonActions() {
     button.addEventListener("click", () => showToast("공식 원문에서 신청 경로를 확인해 주세요."));
   });
 
+  qsa('a[href*="policy.html?id="], a[href*="/policy?id="]').forEach((link) => {
+    if (link.dataset.policySnapshotBound) return;
+    link.dataset.policySnapshotBound = "true";
+    link.addEventListener("click", () => {
+      try {
+        const id = new URL(link.getAttribute("href"), location.href).searchParams.get("id");
+        const policy = policies.find((item) => item.id === id);
+        if (policy) rememberPolicySnapshot(policy);
+      } catch {
+        // The link still navigates normally.
+      }
+    });
+  });
+
   const search = qs("#siteSearch");
   if (search) {
     search.addEventListener("submit", (event) => {
@@ -358,15 +566,12 @@ function renderHome() {
 
 function filteredPolicies() {
   const { type, region, age, target, query } = readCategoryFilters();
-  const normalizedQuery = query.toLowerCase();
   return policies.filter((policy) => {
     const typeMatch = type === "전체" || policy.type === type;
     const regionMatch = region === "전체지역" || policy.region === region;
     const ageMatch = age === "전체연령" || policyAgeGroups(policy).includes(age);
     const targetMatch = target === "전체대상" || policyTargetGroups(policy).includes(target);
-    const queryMatch =
-      !normalizedQuery ||
-      policySearchText(policy).includes(normalizedQuery);
+    const queryMatch = policyMatchesQuery(policy, query);
     return typeMatch && regionMatch && ageMatch && targetMatch && queryMatch;
   });
 }

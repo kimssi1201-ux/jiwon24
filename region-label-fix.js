@@ -1,4 +1,6 @@
 (() => {
+  const WRAPPED_MARKER = "__gg24RegionLabelWrapped";
+
   function setText(element, value) {
     if (element.textContent.trim() !== value) {
       element.textContent = value;
@@ -42,13 +44,21 @@
     relabelGwangjuRegion();
   }
 
-  relabelRegions();
-  document.addEventListener("DOMContentLoaded", relabelRegions);
+  function wrapRenderCategory() {
+    if (typeof window.renderCategory !== "function" || window.renderCategory[WRAPPED_MARKER]) return;
+    const previousRenderCategory = window.renderCategory;
+    window.renderCategory = function renderCategoryWithStableRegionLabels(...args) {
+      const result = previousRenderCategory.apply(this, args);
+      relabelRegions();
+      return result;
+    };
+    window.renderCategory[WRAPPED_MARKER] = true;
+  }
 
-  let runs = 0;
-  const timer = setInterval(() => {
+  wrapRenderCategory();
+  relabelRegions();
+  document.addEventListener("DOMContentLoaded", () => {
+    wrapRenderCategory();
     relabelRegions();
-    runs += 1;
-    if (runs >= 24) clearInterval(timer);
-  }, 500);
+  });
 })();

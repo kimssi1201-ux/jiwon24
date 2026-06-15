@@ -1,6 +1,6 @@
 (() => {
   if (document.body.dataset.page !== "category") return;
-  window.GG24_REGION_FIX_VERSION = "16";
+  window.GG24_REGION_FIX_VERSION = "17";
 
   const regionAliases = {
     서울: ["서울", "서울특별시"],
@@ -156,18 +156,46 @@
 
     return {
       type: liveParams.get("type") || "전체",
-      region: liveParams.get("region") === "전국" ? "전체지역" : liveParams.get("region") || "전체지역",
+      region: normalizeRegionFilter(liveParams.get("region") || "전체지역"),
       age,
       target,
       query: (liveParams.get("q") || "").trim(),
     };
   }
 
+  function normalizeRegionFilter(value) {
+    const compact = String(value || "").trim().replace(/\s+/g, "");
+    const aliases = {
+      전국: "전체지역",
+      전체: "전체지역",
+      전체지역: "전체지역",
+      서울특별시: "서울",
+      부산광역시: "부산",
+      대구광역시: "대구",
+      인천광역시: "인천",
+      광주광역시: "광주",
+      대전광역시: "대전",
+      울산광역시: "울산",
+      세종특별자치시: "세종",
+      강원특별자치도: "강원",
+      충청북도: "충북",
+      충청남도: "충남",
+      전라북도: "전북",
+      전북특별자치도: "전북",
+      전라남도: "전남",
+      경상북도: "경북",
+      경상남도: "경남",
+      제주특별자치도: "제주",
+    };
+    return aliases[compact] || compact;
+  }
+
   function currentFilters() {
     const liveParams = new URLSearchParams(location.search);
-    return typeof readCategoryFilters === "function"
+    const filters = typeof readCategoryFilters === "function"
       ? readCategoryFilters(liveParams)
       : fallbackCategoryFilters(liveParams);
+    return { ...filters, region: normalizeRegionFilter(filters.region) };
   }
 
   function isFocusedFilter(filters) {

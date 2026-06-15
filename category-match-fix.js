@@ -2,7 +2,9 @@
   if (document.body.dataset.page !== "category") return;
 
   const directSmallBusinessPattern =
-    /소상공인|소공인|전통시장|시장상인|상인회|개인사업자/;
+    /소상공인|소공인|전통시장|시장상인|상인회|개인사업자|자영업|가맹점|상권|점포/;
+  const agriculturalBusinessPattern = /귀농|귀산촌|농업창업|농식품|농업인|농어업/;
+  const strictSmallBusinessPattern = /소상공인|소공인|전통시장|시장상인|상인회|개인사업자|자영업|가맹점|상권|점포/;
   const genericTeenAgePattern = /(?:만\s*)?(?:[6-9]|1[0-7])세\s*이상/;
   const genericUsePattern = /누구든지|가입 가능|발급 가능|소비자|사용자|지역제한 없음/;
   const childSignalPattern = /아동|어린이|청소년|초등|중등|고등|입학|학습|교복/;
@@ -13,6 +15,9 @@
     if (groups.includes("소상공인")) {
       const source = policySearchText(policy);
       if (!directSmallBusinessPattern.test(source)) {
+        groups = groups.filter((group) => group !== "소상공인");
+      }
+      if (agriculturalBusinessPattern.test(source) && !strictSmallBusinessPattern.test(source)) {
         groups = groups.filter((group) => group !== "소상공인");
       }
     }

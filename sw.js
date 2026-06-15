@@ -1,4 +1,4 @@
-const CACHE_NAME = "gov-support25-site-v71";
+const CACHE_NAME = "gov-support25-site-v72";
 const ASSETS = [
   "./",
   "./index.html",
@@ -18,11 +18,11 @@ const ASSETS = [
   "./app-shell.js?v=1",
   "./search-fix.js?v=2",
   "./click-snapshot.js?v=1",
-  "./region-fix.js?v=16",
+  "./region-fix.js?v=17",
   "./age-merge-fix.js?v=1",
   "./target-foreigner-fix.js?v=2",
   "./region-label-fix.js?v=4",
-  "./category-match-fix.js?v=7",
+  "./category-match-fix.js?v=8",
   "./manifest.webmanifest",
   "./assets/claim-desk-hero.svg",
   "./assets/hero-phone-main.jpg?v=1",

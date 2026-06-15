@@ -155,6 +155,67 @@ function dedupe(policies) {
   });
 }
 
+function normalizeRegion(value) {
+  const compact = String(value || "").trim().replace(/\s+/g, "");
+  const aliases = {
+    광주광역시: "광주",
+    서울특별시: "서울",
+    부산광역시: "부산",
+    대구광역시: "대구",
+    인천광역시: "인천",
+    대전광역시: "대전",
+    울산광역시: "울산",
+    세종특별자치시: "세종",
+    강원특별자치도: "강원",
+    충청북도: "충북",
+    충청남도: "충남",
+    전라북도: "전북",
+    전북특별자치도: "전북",
+    전라남도: "전남",
+    경상북도: "경북",
+    경상남도: "경남",
+    제주특별자치도: "제주",
+  };
+  return aliases[compact] || compact;
+}
+
+function policyRegionText(policy) {
+  return [
+    policy?.region,
+    policy?.institution,
+    policy?.target,
+    policy?.summary,
+    policy?.method,
+    (policy?.tags || []).join(" "),
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+function isRequestedRegionPolicy(policy, requestedRegion) {
+  const region = normalizeRegion(requestedRegion);
+  if (!region || region === "전체지역") return true;
+  if (region === "전국") return String(policy?.region || "").includes("전국");
+
+  const source = policyRegionText(policy);
+  if (region === "광주") {
+    if (/경기도\s*광주시|경기도광주시/.test(source)) return false;
+    return policy.region === "광주" || /광주광역시|광주광역시교육청/.test(source);
+  }
+  if (region === "경기" && /경기도\s*광주시|경기도광주시/.test(source)) return true;
+  return policy.region === region;
+}
+
+function sortRegionFirst(policies, requestedRegion) {
+  const region = normalizeRegion(requestedRegion);
+  return [...policies].sort((a, b) => {
+    const aLocal = isRequestedRegionPolicy(a, region) && !String(a.region || "").includes("전국");
+    const bLocal = isRequestedRegionPolicy(b, region) && !String(b.region || "").includes("전국");
+    if (aLocal !== bLocal) return aLocal ? -1 : 1;
+    return (Number(b.views) || 0) - (Number(a.views) || 0);
+  });
+}
+
 async function fetchPage(serviceKey, page, perPage, extraParams = {}) {
   const url = new URL(ENDPOINT);
   url.searchParams.set("page", String(page));
@@ -296,6 +357,7 @@ export async function onRequestGet({ request, env }) {
   const perPage = numberParam(url.searchParams, "perPage", 300, 50, 1000);
   const maxItems = numberParam(url.searchParams, "maxItems", 2400, 100, 12000);
   const startPage = numberParam(url.searchParams, "startPage", 1, 1, 40);
+  const requestedRegion = normalizeRegion(url.searchParams.get("region"));
 
   try {
     if (requestedId) {
@@ -321,7 +383,20 @@ export async function onRequestGet({ request, env }) {
       );
     }
 
-    const payload = await fetchPolicies(serviceKey, pages, perPage, maxItems, startPage);
+    const payload = await fetchPolicies(
+      serviceKey,
+      requestedRegion && requestedRegion !== "전체지역" ? 40 : pages,
+      perPage,
+      requestedRegion && requestedRegion !== "전체지역" ? 12000 : maxItems,
+      requestedRegion && requestedRegion !== "전체지역" ? 1 : startPage,
+    );
+    if (requestedRegion && requestedRegion !== "전체지역") {
+      payload.source.region = requestedRegion;
+      payload.policies = sortRegionFirst(
+        payload.policies.filter((policy) => isRequestedRegionPolicy(policy, requestedRegion)),
+        requestedRegion,
+      ).slice(0, maxItems);
+    }
     return Response.json(payload, {
       headers: {
         "Cache-Control": "public, max-age=0, s-maxage=1800, stale-while-revalidate=3600",

@@ -87,6 +87,90 @@
   min-height: 0;
 }
 
+@media (max-width: 759px) {
+  .site-main {
+    padding-top: 12px;
+  }
+
+  .page-stack {
+    gap: 18px;
+  }
+
+  .hero-layout {
+    gap: 10px;
+  }
+
+  .hero-card {
+    box-shadow: none;
+  }
+
+  .hero-copy {
+    gap: 11px;
+    padding: 16px;
+  }
+
+  .hero-copy h1 {
+    font-size: 30px;
+    line-height: 1.12;
+  }
+
+  .hero-copy p:not(.eyebrow) {
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  .hero-media,
+  .hero-shortcuts {
+    display: none;
+  }
+
+  .quick-card {
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .quick-card > div:first-child {
+    display: none;
+  }
+
+  .category-grid {
+    gap: 8px;
+  }
+
+  .category-tile {
+    min-height: 106px;
+    padding: 10px 6px;
+  }
+
+  .tile-illustration {
+    width: 58px;
+    height: 46px;
+  }
+
+  .tile-copy strong {
+    font-size: 15px;
+  }
+
+  .tile-copy small {
+    font-size: 11px;
+  }
+
+  .suggest-search-row,
+  .home-priority-row {
+    gap: 6px;
+  }
+
+  .suggest-search-row > span {
+    flex: 0 0 100%;
+    margin-right: 0;
+    font-size: 13px;
+  }
+
+  .shortcut-group {
+    gap: 7px;
+  }
+}
+
 @media (min-width: 760px) {
   .quick-card > .home-priority-row {
     grid-column: 1 / -1;

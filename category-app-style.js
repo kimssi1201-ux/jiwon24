@@ -3,6 +3,8 @@
 
   const urlParams = new URLSearchParams(location.search);
   const isDeadlineSoon = urlParams.get("deadline") === "soon";
+  const isNewsMode = urlParams.get("mode") === "news";
+  document.body.classList.toggle("category-news-mode", isNewsMode);
   const sheetLabels = {
     regionFilter: "지역기관 선택",
     targetFilter: "지원대상 유형 선택",
@@ -98,15 +100,8 @@
   }
 
   function syncCategoryTabs() {
-    const filters = typeof readCategoryFilters === "function" ? readCategoryFilters() : {};
     document.querySelectorAll(".category-tabs a").forEach((link) => link.classList.remove("active"));
-    const activeHref = isDeadlineSoon
-      ? "deadline=soon"
-      : filters.region && filters.region !== "전체지역"
-          ? "region="
-          : filters.target && filters.target !== "전체대상"
-            ? "target="
-            : "";
+    const activeHref = isDeadlineSoon ? "deadline=soon" : isNewsMode ? "mode=news" : "";
     const activeLink = activeHref
       ? [...document.querySelectorAll(".category-tabs a")].find((link) => link.href.includes(activeHref))
       : document.querySelector(".category-tabs a:first-child");
@@ -115,6 +110,19 @@
 
   function syncDeadlineState() {
     syncCategoryTabs();
+    if (isNewsMode) {
+      const title = document.querySelector("#categoryTitle");
+      const count = document.querySelector("#categoryCount");
+      const typeRow = document.querySelector(".category-hero > .filter-row[aria-label='정책 유형']");
+      const summaryRow = document.querySelector(".filter-summary-row");
+      const searchBox = document.querySelector(".search-box");
+      if (title) title.textContent = "복지소식";
+      if (count) count.textContent = "많이 보는 정책 소식";
+      [typeRow, summaryRow, searchBox].forEach((element) => {
+        if (element) element.hidden = true;
+      });
+      return;
+    }
     if (!isDeadlineSoon) return;
     const title = document.querySelector("#categoryTitle");
     const filters = typeof readCategoryFilters === "function" ? readCategoryFilters() : {};
@@ -141,6 +149,9 @@
     const previousFilteredPolicies = filteredPolicies;
     filteredPolicies = function filteredPoliciesWithDeadline(...args) {
       const list = previousFilteredPolicies(...args);
+      if (isNewsMode) {
+        return [...list].sort((a, b) => Number(b.views || 0) - Number(a.views || 0)).slice(0, 80);
+      }
       return isDeadlineSoon ? list.filter(isWithinThreeDays) : list;
     };
   }
@@ -157,6 +168,6 @@
 
   bindSummaryRow();
   syncDeadlineState();
-  if (isDeadlineSoon && typeof renderCategory === "function") renderCategory();
+  if ((isDeadlineSoon || isNewsMode) && typeof renderCategory === "function") renderCategory();
   [400, 1200, 3000, 6500].forEach((delay) => setTimeout(bindSummaryRow, delay));
 })();

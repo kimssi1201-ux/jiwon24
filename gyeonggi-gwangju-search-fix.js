@@ -171,7 +171,8 @@
     const alreadyRendered = renderGyeonggiGwangjuResults();
     if (alreadyRendered) return;
 
-    const response = await fetch(`/api/policies?region=${encodeURIComponent("경기")}&pages=40&perPage=500&maxItems=12000`, {
+    const query = new URLSearchParams({ region: "경기", pages: "40", perPage: "500", maxItems: "12000" });
+    const response = await fetch(`/api/policies?${query.toString()}`, {
       headers: { Accept: "application/json" },
       cache: "no-store",
     }).catch(() => null);

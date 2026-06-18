@@ -1,8 +1,9 @@
-const CACHE_NAME = "gov-support25-site-v102";
+const CACHE_NAME = "gov-support25-site-v103";
 const ASSETS = [
   "./",
   "./styles.css?v=8",
   "./desktop.css",
+  "./policy-detail.css?v=1",
   "./category-app-style.css?v=4",
   "./home-focus.css?v=2",
   "./deadline.js?v=2",
@@ -11,8 +12,11 @@ const ASSETS = [
   "./deadline.js?v=5",
   "./deadline.js?v=6",
   "./policy-live-detail.js?v=6",
+  "./policy-live-detail.js?v=7",
+  "./policy-detail-actions.js?v=1",
   "./app-shell.js?v=1",
   "./site.js?v=24",
+  "./site.js?v=25",
   "./search-fix.js?v=2",
   "./click-snapshot.js?v=1",
   "./region-fix.js?v=21",
@@ -80,6 +84,8 @@ self.addEventListener("fetch", (event) => {
     url.pathname.endsWith("/agency-label-fix.js") ||
     url.pathname.endsWith("/category-app-style.css") ||
     url.pathname.endsWith("/policy-live-detail.js") ||
+    url.pathname.endsWith("/policy-detail-actions.js") ||
+    url.pathname.endsWith("/policy-detail.css") ||
     url.pathname.endsWith("/manifest.webmanifest") ||
     event.request.mode === "navigate";
 

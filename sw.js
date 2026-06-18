@@ -1,12 +1,6 @@
-const CACHE_NAME = "gov-support25-site-v95";
+const CACHE_NAME = "gov-support25-site-v96";
 const ASSETS = [
   "./",
-  "./index.html",
-  "./category.html",
-  "./policy.html",
-  "./about.html",
-  "./terms.html",
-  "./privacy.html",
   "./styles.css?v=8",
   "./desktop.css",
   "./category-app-style.css?v=3",
@@ -81,6 +75,7 @@ self.addEventListener("fetch", (event) => {
     url.pathname.endsWith("/gyeonggi-gwangju-search-fix.js") ||
     url.pathname.endsWith("/category-match-fix.js") ||
     url.pathname.endsWith("/policy-live-detail.js") ||
+    url.pathname.endsWith("/manifest.webmanifest") ||
     event.request.mode === "navigate";
 
   if (networkFirst) {

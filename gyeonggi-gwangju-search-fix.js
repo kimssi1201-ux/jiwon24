@@ -1,7 +1,7 @@
 (() => {
   if (document.body.dataset.page !== "category") return;
 
-  const version = "3";
+  const version = "4";
   document.documentElement.dataset.gg24GyeonggiGwangjuFix = version;
 
   const ageCodeLabels = {
@@ -21,6 +21,10 @@
   };
   const genericTokens = new Set(["정보", "정책", "혜택", "지원", "지원금", "전체"]);
   let cachedMatches = [];
+
+  function setState(value) {
+    document.documentElement.dataset.gg24GyeonggiGwangjuState = value;
+  }
 
   function compact(value) {
     return String(value || "").toLowerCase().replace(/\s+/g, "");
@@ -222,23 +226,35 @@
 
   async function load() {
     const filters = readFilters();
-    if (!isGyeonggiGwangjuSearch(filters)) return;
+    if (!isGyeonggiGwangjuSearch(filters)) {
+      setState("skip");
+      return;
+    }
     if (cachedMatches.length) {
+      setState(`cached:${cachedMatches.length}`);
       render(cachedMatches);
       return;
     }
 
     const query = new URLSearchParams({ region: "경기", pages: "40", perPage: "500", maxItems: "12000" });
+    setState("fetching");
     const response = await fetch(`/api/policies?${query.toString()}`, {
       headers: { Accept: "application/json" },
       cache: "no-store",
-    }).catch(() => null);
-    if (!response?.ok) return;
+    }).catch((error) => {
+      setState(`fetch-error:${error?.name || "unknown"}`);
+      return null;
+    });
+    if (!response?.ok) {
+      setState(`status:${response?.status || "none"}`);
+      return;
+    }
 
     const data = await response.json().catch(() => null);
     const matches = (Array.isArray(data?.policies) ? data.policies : [])
       .filter(isGyeonggiGwangjuPolicy)
       .filter((policy) => matchesFilters(policy, filters));
+    setState(`policies:${Array.isArray(data?.policies) ? data.policies.length : 0};matches:${matches.length}`);
     render(matches);
   }
 

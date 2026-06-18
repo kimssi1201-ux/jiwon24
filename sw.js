@@ -1,4 +1,4 @@
-const CACHE_NAME = "gov-support25-site-v118";
+const CACHE_NAME = "gov-support25-site-v120";
 const ASSETS = [
   "./",
   "./styles.css?v=8",
@@ -6,7 +6,9 @@ const ASSETS = [
   "./policy-detail.css?v=1",
   "./policy-detail.css?v=2",
   "./category-app-style.css?v=5",
+  "./category-app-style.css?v=6",
   "./popular-filter-fix.css?v=1",
+  "./popular-filter-fix.css?v=2",
   "./home-focus.css?v=2",
   "./deadline.js?v=2",
   "./deadline.js?v=3",
@@ -40,6 +42,7 @@ const ASSETS = [
   "./category-app-style.js?v=11",
   "./category-app-style.js?v=12",
   "./agency-label-fix.js?v=3",
+  "./policy-news.js?v=1",
   "./popular-filter-fix.js?v=2",
   "./category-match-fix.js?v=11",
   "./manifest.webmanifest",
@@ -100,6 +103,7 @@ self.addEventListener("fetch", (event) => {
     url.pathname.endsWith("/category-match-fix.js") ||
     url.pathname.endsWith("/category-app-style.js") ||
     url.pathname.endsWith("/agency-label-fix.js") ||
+    url.pathname.endsWith("/policy-news.js") ||
     url.pathname.endsWith("/popular-filter-fix.js") ||
     url.pathname.endsWith("/popular-filter-fix.css") ||
     url.pathname.endsWith("/category-app-style.css") ||

@@ -1,9 +1,9 @@
-const CACHE_NAME = "gov-support25-site-v96";
+const CACHE_NAME = "gov-support25-site-v97";
 const ASSETS = [
   "./",
   "./styles.css?v=8",
   "./desktop.css",
-  "./category-app-style.css?v=3",
+  "./category-app-style.css?v=4",
   "./home-focus.css?v=2",
   "./deadline.js?v=2",
   "./deadline.js?v=3",
@@ -11,7 +11,7 @@ const ASSETS = [
   "./deadline.js?v=5",
   "./policy-live-detail.js?v=6",
   "./app-shell.js?v=1",
-  "./site.js?v=23",
+  "./site.js?v=24",
   "./search-fix.js?v=2",
   "./click-snapshot.js?v=1",
   "./region-fix.js?v=21",
@@ -19,7 +19,7 @@ const ASSETS = [
   "./target-foreigner-fix.js?v=2",
   "./region-label-fix.js?v=6",
   "./gyeonggi-gwangju-search-fix.js?v=6",
-  "./category-app-style.js?v=4",
+  "./category-app-style.js?v=5",
   "./category-match-fix.js?v=11",
   "./manifest.webmanifest",
   "./assets/claim-desk-hero.svg",
@@ -74,6 +74,8 @@ self.addEventListener("fetch", (event) => {
     url.pathname.endsWith("/region-label-fix.js") ||
     url.pathname.endsWith("/gyeonggi-gwangju-search-fix.js") ||
     url.pathname.endsWith("/category-match-fix.js") ||
+    url.pathname.endsWith("/category-app-style.js") ||
+    url.pathname.endsWith("/category-app-style.css") ||
     url.pathname.endsWith("/policy-live-detail.js") ||
     url.pathname.endsWith("/manifest.webmanifest") ||
     event.request.mode === "navigate";

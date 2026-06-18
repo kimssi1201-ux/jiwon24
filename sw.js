@@ -1,4 +1,4 @@
-const CACHE_NAME = "gov-support25-site-v111";
+const CACHE_NAME = "gov-support25-site-v112";
 const ASSETS = [
   "./",
   "./styles.css?v=8",
@@ -16,10 +16,12 @@ const ASSETS = [
   "./policy-live-detail.js?v=6",
   "./policy-live-detail.js?v=7",
   "./policy-live-detail.js?v=8",
+  "./policy-live-detail.js?v=9",
   "./policy-detail-actions.js?v=1",
   "./policy-detail-actions.js?v=3",
   "./app-shell.js?v=1",
   "./policy-shell.js?v=1",
+  "./deadline-badge-fix.js?v=1",
   "./site.js?v=24",
   "./site.js?v=25",
   "./site.js?v=26",
@@ -31,6 +33,7 @@ const ASSETS = [
   "./region-label-fix.js?v=6",
   "./gyeonggi-gwangju-search-fix.js?v=6",
   "./category-app-style.js?v=11",
+  "./category-app-style.js?v=12",
   "./agency-label-fix.js?v=3",
   "./popular-filter-fix.js?v=2",
   "./category-match-fix.js?v=11",
@@ -80,6 +83,7 @@ self.addEventListener("fetch", (event) => {
     url.pathname.endsWith("/site-data.js") ||
     url.pathname.endsWith("/app-shell.js") ||
     url.pathname.endsWith("/policy-shell.js") ||
+    url.pathname.endsWith("/deadline-badge-fix.js") ||
     url.pathname.endsWith("/deadline.js") ||
     url.pathname.endsWith("/search-fix.js") ||
     url.pathname.endsWith("/region-fix.js") ||

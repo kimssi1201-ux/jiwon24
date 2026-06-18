@@ -37,7 +37,7 @@ const ASSETS = [
   "./assets/hero-phone-hq-07.txt?v=1",
   "./assets/hero-phone-hq-08.txt?v=1",
   "./assets/hero-phone-hq-09.txt?v=1",
-  "./illustration-support.svg",
+  "./assets/illustration-support.svg",
   "./assets/illustration-refund.svg",
   "./assets/illustration-loan.svg",
   "./assets/icon-government-support25.svg?v=2",

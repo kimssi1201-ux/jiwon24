@@ -3,7 +3,7 @@
   "name": "지원금 올데이",
   "short_name": "지원금 올데이",
   "description": "복지정책, 마감임박 정책, 복지소식을 한 화면에서 빠르게 찾는 정책 정보 앱",
-  "start_url": "./index.html?source=pwa&appv=20260618-openfix1",
+  "start_url": "./category.html?source=pwa&appv=20260618-categoryroot1",
   "scope": "./",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],

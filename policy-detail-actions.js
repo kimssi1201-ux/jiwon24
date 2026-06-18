@@ -3,6 +3,15 @@
 
   const toast = document.querySelector("#toast");
 
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
   function showMessage(message) {
     if (typeof showToast === "function") {
       showToast(message);
@@ -17,23 +26,120 @@
     }, 2200);
   }
 
+  function injectDetailStyle() {
+    if (document.querySelector("#policy-detail-enhance-style")) return;
+    const style = document.createElement("style");
+    style.id = "policy-detail-enhance-style";
+    style.textContent = `
+      body[data-page="policy"] .detail-card { font-size: 17px; }
+      body[data-page="policy"] .detail-head h1 { font-size: clamp(32px, 8.4vw, 46px); line-height: 1.15; }
+      body[data-page="policy"] .detail-head p { font-size: 18px; line-height: 1.72; font-weight: 850; }
+      body[data-page="policy"] .detail-actions .primary-button,
+      body[data-page="policy"] .detail-actions .ghost-button,
+      body[data-page="policy"] .detail-share .ghost-button { min-height: 50px; font-size: 16px; font-weight: 900; }
+      body[data-page="policy"] .detail-section h2 { font-size: 23px; }
+      body[data-page="policy"] .detail-section p { font-size: 17px; line-height: 1.85; }
+      body[data-page="policy"] .detail-highlight strong,
+      body[data-page="policy"] .detail-row dd { font-size: 17px; line-height: 1.65; }
+      body[data-page="policy"] .detail-tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 2px; }
+      body[data-page="policy"] .detail-tags span { border-radius: 999px; background: #eff6ff; color: #1d4ed8; padding: 7px 10px; font-size: 14px; font-weight: 900; line-height: 1; }
+      body[data-page="policy"] .detail-guide { border: 1px solid #dbeafe; border-radius: 16px; background: #f8fbff; padding: 18px; }
+      body[data-page="policy"] .detail-lead { margin: 0; color: #111827; font-size: 18px; font-weight: 850; line-height: 1.78; }
+      body[data-page="policy"] .detail-list { display: grid; gap: 10px; margin: 14px 0 0; padding: 0; list-style: none; }
+      body[data-page="policy"] .detail-list li { display: grid; gap: 5px; border: 1px solid #e5e7eb; border-radius: 14px; background: #fff; padding: 14px; }
+      body[data-page="policy"] .detail-list strong { color: #1d4ed8; font-size: 14px; font-weight: 950; }
+      body[data-page="policy"] .detail-list span { color: #111827; font-size: 17px; font-weight: 800; line-height: 1.62; word-break: keep-all; overflow-wrap: anywhere; }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function textOf(selector) {
+    return document.querySelector(selector)?.textContent?.replace(/\s+/g, " ").trim() || "";
+  }
+
+  function highlightValue(label) {
+    const rows = [...document.querySelectorAll(".detail-highlight")];
+    const row = rows.find((item) => item.querySelector("span")?.textContent?.includes(label));
+    return row?.querySelector("strong")?.textContent?.replace(/\s+/g, " ").trim() || "";
+  }
+
   function shareText() {
-    const title = document.querySelector(".detail-head h1")?.textContent?.trim() || document.title;
-    const summary = document.querySelector(".detail-head p")?.textContent?.trim() || "지원금 올데이에서 정책 정보를 확인해 보세요.";
+    const title = textOf(".detail-head h1") || document.title;
+    const summary = textOf(".detail-head p") || "지원금 올데이에서 정책 정보를 확인해 보세요.";
     return { title, text: summary, url: location.href };
   }
 
   function ensureShareButtons() {
     const head = document.querySelector(".detail-head");
-    if (!head || head.querySelector(".detail-share")) return;
+    if (!head) return;
+
+    head.querySelectorAll("[data-share-policy]").forEach((button) => {
+      button.textContent = "SNS 공유";
+    });
+
+    if (head.querySelector(".detail-share")) return;
     const row = document.createElement("div");
     row.className = "detail-share";
     row.setAttribute("aria-label", "정책 공유");
     row.innerHTML = `
-      <button class="ghost-button share-button" type="button" data-share-policy>공유하기</button>
+      <button class="ghost-button share-button" type="button" data-share-policy>SNS 공유</button>
       <button class="ghost-button copy-button" type="button" data-copy-link>링크복사</button>
     `;
     head.appendChild(row);
+  }
+
+  function ensureTags() {
+    const head = document.querySelector(".detail-head");
+    const summary = textOf(".detail-head p");
+    if (!head || head.querySelector(".detail-tags")) return;
+
+    const baseTags = [...document.querySelectorAll(".meta-row .badge")].map((badge) => badge.textContent.trim());
+    const region = highlightValue("거주지") || highlightValue("지역");
+    const target = highlightValue("지원대상");
+    const tags = [...baseTags, region, target]
+      .flatMap((value) => String(value || "").split(/[,·#]/))
+      .map((value) => value.trim())
+      .filter((value) => value && value.length <= 12 && !summary.includes(`${value} `));
+    const uniqueTags = [...new Set(tags)].slice(0, 6);
+    if (!uniqueTags.length) return;
+
+    const tagBox = document.createElement("div");
+    tagBox.className = "detail-tags";
+    tagBox.setAttribute("aria-label", "정책 키워드");
+    tagBox.innerHTML = uniqueTags.map((tag) => `<span>#${escapeHtml(tag)}</span>`).join("");
+    const actions = head.querySelector(".detail-actions");
+    head.insertBefore(tagBox, actions || null);
+  }
+
+  function ensureGuide() {
+    const overview = document.querySelector(".detail-overview");
+    if (!overview || document.querySelector(".detail-guide")) return;
+
+    const summary = textOf(".detail-head p") || "정책의 주요 조건과 신청 방법을 확인할 수 있습니다.";
+    const benefit = textOf(".benefit-summary strong") || "기관 문의";
+    const target = highlightValue("지원대상") || "공고 확인";
+    const method = highlightValue("신청방법") || "관할 기관 안내 확인";
+    const institution = highlightValue("지원기관") || "관할 기관";
+
+    const guide = document.createElement("section");
+    guide.className = "detail-section detail-guide";
+    guide.innerHTML = `
+      <h2>이 정책에서 확인할 내용</h2>
+      <p class="detail-lead">${escapeHtml(summary)}</p>
+      <ul class="detail-list">
+        <li><strong>받을 수 있는 혜택</strong><span>${escapeHtml(benefit)}</span></li>
+        <li><strong>대상 조건</strong><span>${escapeHtml(target)}</span></li>
+        <li><strong>신청 안내</strong><span>${escapeHtml(method)} · 신청 전 ${escapeHtml(institution)}의 최신 공고를 확인하세요.</span></li>
+      </ul>
+    `;
+    overview.insertAdjacentElement("afterend", guide);
+  }
+
+  function enhanceDetail() {
+    injectDetailStyle();
+    ensureShareButtons();
+    ensureTags();
+    ensureGuide();
   }
 
   document.addEventListener("click", async (event) => {
@@ -55,7 +161,7 @@
   });
 
   const detail = document.querySelector("#policyDetail");
-  if (detail) new MutationObserver(ensureShareButtons).observe(detail, { childList: true, subtree: true });
-  ensureShareButtons();
-  [150, 600, 1500, 3500].forEach((delay) => setTimeout(ensureShareButtons, delay));
+  if (detail) new MutationObserver(enhanceDetail).observe(detail, { childList: true, subtree: true });
+  enhanceDetail();
+  [150, 600, 1500, 3500].forEach((delay) => setTimeout(enhanceDetail, delay));
 })();

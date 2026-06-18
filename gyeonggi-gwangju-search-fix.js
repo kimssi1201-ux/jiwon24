@@ -1,6 +1,7 @@
 (() => {
   if (document.body.dataset.page !== "category") return;
-  window.GG24_GYEONGGI_GWANGJU_FIX_VERSION = "1";
+  window.GG24_GYEONGGI_GWANGJU_FIX_VERSION = "2";
+  document.documentElement.dataset.gg24GyeonggiGwangjuFix = "2";
 
   const previousQueryRegionHints = queryRegionHints;
   const previousQueryTokens = queryTokens;
@@ -86,5 +87,104 @@
     });
   };
 
+  function policyGyeonggiGwangjuText(policy) {
+    return [
+      policy?.region,
+      policy?.institution,
+      policy?.title,
+      policy?.target,
+      policy?.summary,
+      policy?.method,
+      (policy?.tags || []).join(" "),
+    ]
+      .filter(Boolean)
+      .join(" ");
+  }
+
+  function isGyeonggiGwangjuPolicy(policy) {
+    const source = policyGyeonggiGwangjuText(policy);
+    return (
+      String(policy?.region || "") === "경기" &&
+      !/광주광역시/.test(source) &&
+      /경기도\s*광주시|경기도광주시|광주시/.test(source)
+    );
+  }
+
+  function extraQueryTokens(query) {
+    return String(query || "")
+      .split(/[\s,./|]+/)
+      .map(compactSearchValue)
+      .filter(Boolean)
+      .filter((token) => !["경기", "경기도", "광주", "광주시"].includes(token))
+      .filter((token) => !genericSearchTokens.has(token));
+  }
+
+  function mergePolicyLists(primary, secondary) {
+    const seen = new Set();
+    return [...primary, ...secondary].filter((policy) => {
+      const key = policy?.id || `${policy?.title || ""}-${policy?.institution || ""}`;
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
+  function gyeonggiGwangjuFilteredPolicies() {
+    const { type, region, age, target, query } = readCategoryFilters();
+    if (!isGyeonggiGwangjuSearch(query, region)) return [];
+    const extraTokens = extraQueryTokens(query);
+    return policies.filter((policy) => {
+      const compactSource = compactSearchValue([
+        policyGyeonggiGwangjuText(policy),
+        policy.type,
+        policyAgeGroups(policy).join(" "),
+        policyTargetGroups(policy).join(" "),
+      ].join(" "));
+      const typeMatch = type === "전체" || policy.type === type;
+      const ageMatch = age === "전체연령" || policyAgeGroups(policy).includes(age);
+      const targetMatch = target === "전체대상" || policyTargetGroups(policy).includes(target);
+      const queryMatch = extraTokens.every((token) => compactSource.includes(token));
+      return typeMatch && ageMatch && targetMatch && queryMatch && isGyeonggiGwangjuPolicy(policy);
+    });
+  }
+
+  function renderGyeonggiGwangjuResults() {
+    const matches = gyeonggiGwangjuFilteredPolicies();
+    if (!matches.length) return false;
+
+    const count = document.querySelector("#categoryCount");
+    const title = document.querySelector("#categoryTitle");
+    const list = document.querySelector("#policyList");
+    const notice = document.querySelector("#resultNotice");
+    if (title) title.textContent = "경기 광주 정보";
+    if (count) count.textContent = `${matches.length.toLocaleString("ko-KR")}개 결과`;
+    if (notice) notice.textContent = "";
+    if (list) list.innerHTML = matches.slice(0, 180).map(policyCard).join("");
+    if (typeof bindCommonActions === "function") bindCommonActions();
+    return true;
+  }
+
+  async function loadGyeonggiGwangjuPolicies() {
+    const filters = readCategoryFilters();
+    if (!isGyeonggiGwangjuSearch(filters.query, filters.region)) return;
+
+    const alreadyRendered = renderGyeonggiGwangjuResults();
+    if (alreadyRendered) return;
+
+    const response = await fetch(`/api/policies?region=${encodeURIComponent("경기")}&pages=40&perPage=500&maxItems=12000`, {
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+    }).catch(() => null);
+    if (!response?.ok) return;
+    const data = await response.json().catch(() => null);
+    if (!Array.isArray(data?.policies)) return;
+
+    policies = mergePolicyLists(data.policies, policies);
+    window.GG24_CATEGORY_FULL_LOAD_DONE = true;
+    renderCategory();
+    renderGyeonggiGwangjuResults();
+  }
+
   renderCategory();
+  [0, 600, 1800, 4000].forEach((delay) => setTimeout(() => loadGyeonggiGwangjuPolicies(), delay));
 })();

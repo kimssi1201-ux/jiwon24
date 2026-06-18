@@ -4,24 +4,36 @@
   display: none;
 }
 
+body[data-page="category"].category-news-mode .category-hero > .filter-row[aria-label="정책 유형"],
+body[data-page="category"].category-news-mode .filter-summary-row,
+body[data-page="category"].category-news-mode .search-box {
+  display: none;
+}
+
 @media (max-width: 759px) {
   body[data-page="category"] {
-    background: #f3f4f7;
+    background: #f5f6f8;
   }
 
-  body[data-page="category"] .promo-bar {
+  body[data-page="category"] .promo-bar,
+  body[data-page="category"] .brand-mark,
+  body[data-page="category"] .brand-copy small,
+  body[data-page="category"] .trust-badge,
+  body[data-page="category"] .desktop-nav,
+  body[data-page="category"] .site-search {
     display: none;
   }
 
   body[data-page="category"] .site-header {
     top: 0;
-    background: rgba(255, 255, 255, 0.94);
+    background: rgba(255, 255, 255, 0.96);
     border-bottom: 0;
+    box-shadow: none;
   }
 
   body[data-page="category"] .header-inner {
     position: relative;
-    min-height: 62px;
+    min-height: 58px;
     justify-content: center;
     padding: 8px 54px;
   }
@@ -35,7 +47,7 @@
   }
 
   body[data-page="category"] .header-inner::before {
-    left: 20px;
+    left: 21px;
     width: 20px;
     height: 20px;
     border: 2px solid #111827;
@@ -43,7 +55,7 @@
   }
 
   body[data-page="category"] .header-inner::after {
-    right: 24px;
+    right: 25px;
     width: 5px;
     height: 5px;
     border-radius: 50%;
@@ -58,7 +70,7 @@
   body[data-page="category"] .brand::after {
     content: "";
     position: absolute;
-    left: 37px;
+    left: 38px;
     top: 37px;
     width: 9px;
     height: 2px;
@@ -67,37 +79,35 @@
     transform: rotate(45deg);
   }
 
-  body[data-page="category"] .brand-mark {
-    display: none;
-  }
-
   body[data-page="category"] .brand-copy strong {
-    font-size: 24px;
+    font-size: 23px;
     line-height: 1;
     font-weight: 950;
+    letter-spacing: 0;
   }
 
   body[data-page="category"] .category-tabs {
     position: sticky;
-    top: 62px;
+    top: 58px;
     z-index: 24;
     display: flex;
-    gap: 28px;
+    gap: 31px;
     overflow-x: auto;
-    padding: 14px 20px 0;
-    background: rgba(255, 255, 255, 0.94);
+    padding: 14px 22px 0;
+    background: rgba(255, 255, 255, 0.96);
     border-bottom: 1px solid #e2e5ea;
     scrollbar-width: none;
   }
 
-  body[data-page="category"] .category-tabs::-webkit-scrollbar {
+  body[data-page="category"] .category-tabs::-webkit-scrollbar,
+  body[data-page="category"] .filter-summary-row::-webkit-scrollbar {
     display: none;
   }
 
   body[data-page="category"] .category-tabs a {
     position: relative;
     flex: 0 0 auto;
-    min-height: 42px;
+    min-height: 43px;
     color: #8d939d;
     font-size: 18px;
     font-weight: 950;
@@ -120,106 +130,64 @@
   }
 
   body[data-page="category"] .site-main {
-    padding: 14px 14px 28px;
+    padding: 12px 14px 28px;
   }
 
   body[data-page="category"] .page-stack {
-    gap: 12px;
+    gap: 10px;
   }
 
   body[data-page="category"] .category-hero {
-    gap: 11px;
-    padding: 0;
-    border: 0;
-    background: transparent;
-  }
-
-  body[data-page="category"] .category-hero .eyebrow {
-    display: none;
-  }
-
-  body[data-page="category"] .category-hero h1 {
-    margin: 0;
-    padding: 0 2px;
-    color: #111827;
-    font-size: 22px;
-    line-height: 1.25;
-    font-weight: 950;
-  }
-
-  body[data-page="category"] #categoryCount {
-    margin: -6px 0 2px;
-    padding: 0 2px;
-    color: #5c6470;
-    font-size: 15px;
-    font-weight: 850;
-  }
-
-  body[data-page="category"] .category-hero > .filter-row[aria-label="정책 유형"] {
     gap: 0;
-    padding: 0 2px;
-    border-bottom: 1px solid #d7dce3;
-  }
-
-  body[data-page="category"] .category-hero > .filter-row[aria-label="정책 유형"] a {
-    min-height: 42px;
+    padding: 0 0 2px;
     border: 0;
-    border-radius: 0;
     background: transparent;
-    color: #9ca3ad;
-    padding: 8px 18px 10px 0;
-    font-size: 17px;
-    font-weight: 950;
+    box-shadow: none;
   }
 
-  body[data-page="category"] .category-hero > .filter-row[aria-label="정책 유형"] a.active {
-    position: relative;
-    color: #111827;
-  }
-
-  body[data-page="category"] .category-hero > .filter-row[aria-label="정책 유형"] a.active::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 18px;
-    bottom: -1px;
-    height: 3px;
-    border-radius: 999px;
-    background: #111827;
+  body[data-page="category"] .category-hero .eyebrow,
+  body[data-page="category"] .category-hero h1,
+  body[data-page="category"] #categoryCount,
+  body[data-page="category"] .category-hero > .filter-row[aria-label="정책 유형"],
+  body[data-page="category"] .region-filter,
+  body[data-page="category"] .search-box {
+    display: none;
   }
 
   body[data-page="category"] .filter-summary-row {
     display: flex;
     gap: 9px;
     overflow-x: auto;
-    padding: 1px 2px 2px;
+    padding: 2px 0 4px;
     scrollbar-width: none;
   }
 
-  body[data-page="category"] .filter-summary-row::-webkit-scrollbar {
-    display: none;
-  }
-
   body[data-page="category"] .filter-summary-row button {
-    min-height: 44px;
+    min-height: 48px;
     flex: 0 0 auto;
     display: inline-flex;
     align-items: center;
     gap: 8px;
     border: 1px solid #cfd5df;
-    border-radius: 7px;
+    border-radius: 8px;
     background: #ffffff;
-    color: #20242b;
-    padding: 9px 13px;
-    font-size: 16px;
+    color: #222831;
+    padding: 10px 14px;
+    font-size: 17px;
     font-weight: 950;
+    box-shadow: 0 1px 3px rgba(17, 24, 39, 0.06);
+  }
+
+  body[data-page="category"] .filter-summary-row .summary-popular {
+    border-color: #3154d4;
+    color: #2445c7;
   }
 
   body[data-page="category"] .summary-icon {
     position: relative;
-    width: 18px;
-    height: 18px;
-    flex: 0 0 18px;
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
     color: #5f6772;
   }
 
@@ -256,90 +224,69 @@
     box-shadow: 6px -5px 0 #2563eb, 12px -1px 0 #2563eb;
   }
 
-  body[data-page="category"] .region-filter {
+  body[data-page="category"] .section {
+    margin: 0;
+  }
+
+  body[data-page="category"] .result-notice:empty {
     display: none;
   }
 
-  body[data-page="category"] .search-box {
-    min-height: 46px;
-    border-color: #d5dae2;
-    border-radius: 7px;
-    box-shadow: 0 1px 0 rgba(17, 24, 39, 0.03);
-  }
-
-  body[data-page="category"] .search-box input {
-    font-size: 16px;
-    font-weight: 800;
-  }
-
-  body[data-page="category"] .search-box button {
-    width: 44px;
-    border-radius: 7px;
-    background: #111827;
-  }
-
-  body[data-page="category"] .result-notice {
-    padding: 12px 14px;
-    border: 1px solid #d7dce3;
-    border-radius: 7px;
-    background: #ffffff;
-    color: #3f4650;
-    font-size: 15px;
-    font-weight: 800;
-  }
-
-  body[data-page="category"] .result-notice .same-name-options {
-    margin-top: 9px;
-  }
-
   body[data-page="category"] .policy-list {
-    gap: 12px;
+    gap: 11px;
   }
 
-  body[data-page="category"] .policy-card {
+  body[data-page="category"] .policy-card,
+  body[data-page="category"] .policy-card.app-list-card {
     display: block;
-    padding: 17px 16px;
-    border-color: #d9dee6;
-    border-radius: 7px;
+    padding: 17px 16px 15px;
+    border: 1px solid #d7dce4;
+    border-radius: 8px;
     background: #ffffff;
-    box-shadow: 0 3px 12px rgba(17, 24, 39, 0.07);
+    box-shadow: 0 3px 11px rgba(15, 23, 42, 0.08);
   }
 
-  body[data-page="category"] .policy-thumb {
+  body[data-page="category"] .policy-thumb,
+  body[data-page="category"] .mini-meta {
     display: none;
   }
 
   body[data-page="category"] .policy-body {
-    gap: 10px;
+    display: grid;
+    gap: 9px;
+  }
+
+  body[data-page="category"] .meta-row {
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 1px;
   }
 
   body[data-page="category"] .badge {
     min-height: 30px;
-    border-radius: 7px;
-    background: #e8ecf4;
-    color: #293a91;
+    border-radius: 8px;
     padding: 6px 11px;
-    font-size: 14px;
+    font-size: 15px;
+    line-height: 1.05;
     font-weight: 950;
   }
 
-  body[data-page="category"] .badge.refund {
-    background: #fff0ed;
-    color: #b23e2e;
-  }
-
-  body[data-page="category"] .badge.loan {
-    background: #edf3ff;
-    color: #255fb8;
+  body[data-page="category"] .badge.agency {
+    background: #2348d3;
+    color: #ffffff;
   }
 
   body[data-page="category"] .badge.deadline {
+    margin-left: auto;
     background: transparent;
-    color: #9a2f2f;
+    color: #8d2b2b;
     padding-inline: 0;
+    white-space: nowrap;
   }
 
   body[data-page="category"] .policy-card h3 {
+    margin: 0;
     color: #111827;
     font-size: 22px;
     line-height: 1.32;
@@ -347,51 +294,57 @@
     letter-spacing: 0;
   }
 
-  body[data-page="category"] .policy-card p {
-    color: #555d68;
-    font-size: 16px;
-    line-height: 1.55;
-    font-weight: 750;
+  body[data-page="category"] .policy-card h3 a {
+    color: inherit;
   }
 
-  body[data-page="category"] .mini-meta {
-    display: grid;
-    grid-template-columns: 82px minmax(0, 1fr);
-    gap: 7px 12px;
-    align-items: start;
-    color: #2f3540;
-    font-size: 16px;
+  body[data-page="category"] .policy-card .policy-highlight {
+    display: -webkit-box;
+    margin: 0;
+    overflow: hidden;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    color: #a03a35;
+    font-size: 18px;
+    line-height: 1.42;
     font-weight: 850;
   }
 
-  body[data-page="category"] .mini-meta span:first-child::before {
-    content: "조회";
-    display: inline-block;
-    min-width: 46px;
-    margin-right: 7px;
+  body[data-page="category"] .policy-facts {
+    display: grid;
+    grid-template-columns: 82px minmax(0, 1fr);
+    gap: 7px 12px;
+    margin: 3px 0 0;
+    color: #20242b;
+    font-size: 17px;
+    line-height: 1.3;
+  }
+
+  body[data-page="category"] .policy-facts dt,
+  body[data-page="category"] .policy-facts dd {
+    margin: 0;
+  }
+
+  body[data-page="category"] .policy-facts dt {
     color: #111827;
     font-weight: 950;
   }
 
-  body[data-page="category"] .mini-meta span:last-child::before {
-    content: "혜택";
-    display: inline-block;
-    min-width: 46px;
-    margin-right: 7px;
-    color: #111827;
-    font-weight: 950;
+  body[data-page="category"] .policy-facts dd {
+    min-width: 0;
+    color: #414854;
+    font-weight: 850;
   }
 
   body[data-page="category"] .card-actions {
-    margin-top: 2px;
+    display: none;
   }
 
-  body[data-page="category"] .card-actions .ghost-button,
-  body[data-page="category"] .card-actions .apply-link {
-    min-height: 38px;
-    border-radius: 7px;
-    padding: 8px 13px;
-    font-size: 14px;
+  body[data-page="category"] .empty-card {
+    border-radius: 8px;
+    background: #ffffff;
+    font-size: 17px;
+    font-weight: 850;
   }
 
   body[data-page="category"].filter-sheet-open {
@@ -403,22 +356,22 @@
     inset: 0;
     z-index: 80;
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: center;
-    padding: 18px;
-    background: rgba(17, 24, 39, 0.52);
+    padding: 22px;
+    background: rgba(17, 24, 39, 0.62);
   }
 
   .filter-sheet {
-    width: min(100%, 430px);
-    max-height: min(78vh, 680px);
+    width: min(100%, 370px);
+    max-height: min(76vh, 690px);
     display: grid;
     grid-template-rows: auto minmax(0, 1fr);
     gap: 12px;
     overflow: hidden;
     border-radius: 8px;
     background: #ffffff;
-    padding: 22px 18px 18px;
+    padding: 26px 20px 20px;
     box-shadow: 0 22px 80px rgba(0, 0, 0, 0.24);
   }
 
@@ -432,7 +385,7 @@
   .filter-sheet-head h2 {
     margin: 0;
     color: #111827;
-    font-size: 24px;
+    font-size: 25px;
     line-height: 1.2;
     font-weight: 950;
   }
@@ -469,28 +422,29 @@
   .filter-sheet-options {
     display: flex;
     flex-wrap: wrap;
-    gap: 11px;
+    justify-content: center;
+    gap: 10px;
     overflow-y: auto;
-    padding: 8px 2px 4px;
+    padding: 14px 2px 4px;
   }
 
   .filter-sheet-options a {
-    min-height: 42px;
+    min-height: 43px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid #cfd5df;
+    border: 1px solid #aeb4bf;
     border-radius: 999px;
     background: #ffffff;
     color: #222831;
-    padding: 9px 15px;
-    font-size: 17px;
+    padding: 8px 16px;
+    font-size: 18px;
     font-weight: 900;
   }
 
   .filter-sheet-options a.active {
-    border-color: #2563eb;
-    background: #eff6ff;
-    color: #1d4ed8;
+    border-color: #111827;
+    background: #f2f4f7;
+    color: #111827;
   }
 }

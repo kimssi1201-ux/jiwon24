@@ -1,9 +1,10 @@
-const CACHE_NAME = "gov-support25-site-v105";
+const CACHE_NAME = "gov-support25-site-v106";
 const ASSETS = [
   "./",
   "./styles.css?v=8",
   "./desktop.css",
   "./policy-detail.css?v=1",
+  "./policy-detail.css?v=2",
   "./category-app-style.css?v=4",
   "./home-focus.css?v=2",
   "./deadline.js?v=2",
@@ -13,7 +14,9 @@ const ASSETS = [
   "./deadline.js?v=6",
   "./policy-live-detail.js?v=6",
   "./policy-live-detail.js?v=7",
+  "./policy-live-detail.js?v=8",
   "./policy-detail-actions.js?v=1",
+  "./policy-detail-actions.js?v=2",
   "./app-shell.js?v=1",
   "./site.js?v=24",
   "./site.js?v=25",

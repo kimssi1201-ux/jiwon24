@@ -2,6 +2,10 @@
   if (document.body.dataset.page !== "policy") return;
 
   const toast = document.querySelector("#toast");
+  const KAKAO_SDK_SRC = "https://t1.kakaocdn.net/kakao_js_sdk/2.7.6/kakao.min.js";
+  const SHARE_IMAGE_URL = "https://jiwon24.pages.dev/assets/app-icon-512.png";
+  const SITE_KAKAO_JS_KEY = "";
+  let kakaoSdkPromise = null;
 
   function escapeHtml(value) {
     return String(value ?? "")
@@ -37,6 +41,8 @@
       body[data-page="policy"] .detail-actions .primary-button,
       body[data-page="policy"] .detail-actions .ghost-button,
       body[data-page="policy"] .detail-share .ghost-button { min-height: 50px; font-size: 16px; font-weight: 900; }
+      body[data-page="policy"] .detail-share .share-button { border-color: #fee500; background: #fee500; color: #111827; }
+      body[data-page="policy"] .detail-share .share-button::before { content: ""; display: inline-block; width: 9px; height: 9px; margin-right: 7px; border-radius: 999px; background: #111827; vertical-align: 1px; }
       body[data-page="policy"] .detail-section h2 { font-size: 23px; }
       body[data-page="policy"] .detail-section p { font-size: 17px; line-height: 1.85; }
       body[data-page="policy"] .detail-highlight strong,
@@ -66,7 +72,83 @@
   function shareText() {
     const title = textOf(".detail-head h1") || document.title;
     const summary = textOf(".detail-head p") || "지원금 올데이에서 정책 정보를 확인해 보세요.";
-    return { title, text: summary, url: location.href };
+    return { title, text: summary, url: location.href, imageUrl: SHARE_IMAGE_URL };
+  }
+
+  function kakaoKey() {
+    return (
+      SITE_KAKAO_JS_KEY ||
+      window.GG24_KAKAO_JS_KEY ||
+      window.KAKAO_JS_KEY ||
+      document.querySelector('meta[name="kakao-js-key"]')?.content ||
+      localStorage.getItem("KAKAO_JS_KEY") ||
+      ""
+    ).trim();
+  }
+
+  function loadKakaoSdk() {
+    if (window.Kakao?.Share) return Promise.resolve(window.Kakao);
+    if (kakaoSdkPromise) return kakaoSdkPromise;
+
+    kakaoSdkPromise = new Promise((resolve, reject) => {
+      const existing = document.querySelector(`script[src="${KAKAO_SDK_SRC}"]`);
+      if (existing) {
+        existing.addEventListener("load", () => resolve(window.Kakao), { once: true });
+        existing.addEventListener("error", reject, { once: true });
+        return;
+      }
+
+      const script = document.createElement("script");
+      script.src = KAKAO_SDK_SRC;
+      script.async = true;
+      script.crossOrigin = "anonymous";
+      script.onload = () => resolve(window.Kakao);
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+
+    return kakaoSdkPromise;
+  }
+
+  async function copyShareUrl(data, message = "링크를 복사했어요.") {
+    await navigator.clipboard.writeText(data.url);
+    showMessage(message);
+  }
+
+  async function sendKakaoShare(data) {
+    const key = kakaoKey();
+    if (!key) {
+      await copyShareUrl(data, "카카오 키를 넣으면 이미지 공유가 켜져요. 지금은 링크를 복사했어요.");
+      return false;
+    }
+
+    const Kakao = await loadKakaoSdk();
+    if (!Kakao?.isInitialized?.()) Kakao.init(key);
+
+    Kakao.Share.sendDefault({
+      objectType: "feed",
+      content: {
+        title: data.title,
+        description: data.text,
+        imageUrl: data.imageUrl,
+        link: {
+          mobileWebUrl: data.url,
+          webUrl: data.url,
+        },
+      },
+      buttons: [
+        {
+          title: "정책 보기",
+          link: {
+            mobileWebUrl: data.url,
+            webUrl: data.url,
+          },
+        },
+      ],
+      installTalk: true,
+    });
+
+    return true;
   }
 
   function ensureShareButtons() {
@@ -74,7 +156,7 @@
     if (!head) return;
 
     head.querySelectorAll("[data-share-policy]").forEach((button) => {
-      button.textContent = "SNS 공유";
+      button.textContent = "카카오톡 공유";
     });
 
     if (head.querySelector(".detail-share")) return;
@@ -82,7 +164,7 @@
     row.className = "detail-share";
     row.setAttribute("aria-label", "정책 공유");
     row.innerHTML = `
-      <button class="ghost-button share-button" type="button" data-share-policy>SNS 공유</button>
+      <button class="ghost-button share-button" type="button" data-share-policy>카카오톡 공유</button>
       <button class="ghost-button copy-button" type="button" data-copy-link>링크복사</button>
     `;
     head.appendChild(row);
@@ -149,12 +231,15 @@
 
     const data = shareText();
     try {
-      if (shareButton && navigator.share) {
-        await navigator.share(data);
+      if (shareButton) {
+        const sent = await sendKakaoShare(data);
+        if (sent) return;
         return;
       }
-      await navigator.clipboard.writeText(data.url);
-      showMessage("링크를 복사했어요.");
+      if (copyButton) {
+        await copyShareUrl(data);
+        return;
+      }
     } catch (error) {
       if (error?.name !== "AbortError") showMessage("주소창의 링크를 복사해 주세요.");
     }

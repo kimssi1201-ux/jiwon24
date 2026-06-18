@@ -2,8 +2,8 @@
   "id": "./",
   "name": "지원금 올데이",
   "short_name": "지원금 올데이",
-  "description": "지원금, 환급금, 정책 대출을 한 화면에서 빠르게 찾는 정책 정보 앱",
-  "start_url": "./index.html?source=pwa",
+  "description": "복지정책, 마감임박 정책, 복지소식을 한 화면에서 빠르게 찾는 정책 정보 앱",
+  "start_url": "./index.html?source=pwa&appv=20260618-nav2",
   "scope": "./",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],
@@ -39,21 +39,21 @@
   ],
   "shortcuts": [
     {
-      "name": "지원금 찾기",
-      "short_name": "지원금",
-      "url": "./category.html?type=지원금",
+      "name": "복지정책 보기",
+      "short_name": "복지정책",
+      "url": "./category.html",
       "icons": [{ "src": "assets/app-icon-192.png?v=1", "sizes": "192x192" }]
     },
     {
-      "name": "환급금 확인",
-      "short_name": "환급금",
-      "url": "./category.html?type=환급금",
+      "name": "마감임박 보기",
+      "short_name": "마감임박",
+      "url": "./category.html?deadline=soon",
       "icons": [{ "src": "assets/app-icon-192.png?v=1", "sizes": "192x192" }]
     },
     {
-      "name": "정책대출 보기",
-      "short_name": "대출",
-      "url": "./category.html?type=대출",
+      "name": "복지소식 보기",
+      "short_name": "복지소식",
+      "url": "./category.html?mode=news",
       "icons": [{ "src": "assets/app-icon-192.png?v=1", "sizes": "192x192" }]
     }
   ]

@@ -79,6 +79,10 @@
     return text.length > 200 ? `${text.slice(0, 197)}...` : text;
   }
 
+  function kakaoShareImageUrl() {
+    return "https://jiwon24.pages.dev/assets/app-icon-512.png?v=1";
+  }
+
   function kakaoKey() {
     return (
       SITE_KAKAO_JS_KEY ||
@@ -138,13 +142,25 @@
     if (!Kakao?.isInitialized?.()) Kakao.init(key);
 
     Kakao.Share.sendDefault({
-      objectType: "text",
-      text: kakaoShareText(data),
-      link: {
-        mobileWebUrl: data.url,
-        webUrl: data.url,
+      objectType: "feed",
+      content: {
+        title: data.title || "지원금 올데이",
+        description: kakaoShareText(data),
+        imageUrl: kakaoShareImageUrl(),
+        link: {
+          mobileWebUrl: data.url,
+          webUrl: data.url,
+        },
       },
-      buttonTitle: "정책 보기",
+      buttons: [
+        {
+          title: "정책 보기",
+          link: {
+            mobileWebUrl: data.url,
+            webUrl: data.url,
+          },
+        },
+      ],
       installTalk: true,
     });
 

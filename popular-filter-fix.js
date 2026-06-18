@@ -6,5 +6,11 @@
   }
 
   removePopularFilter();
-  new MutationObserver(removePopularFilter).observe(document.body, { childList: true, subtree: true });
+
+  const hero = document.querySelector(".category-hero");
+  if (!hero) return;
+
+  const observer = new MutationObserver(removePopularFilter);
+  observer.observe(hero, { childList: true, subtree: true });
+  setTimeout(() => observer.disconnect(), 12000);
 })();

@@ -2,6 +2,20 @@
   display: none !important;
 }
 
+body[data-page="category"] .news-card .badge.agency {
+  background: #eef2ff;
+  color: #243c8f;
+}
+
+body[data-page="category"] .news-card .badge.deadline {
+  background: #f1f5f9;
+  color: #526173;
+}
+
+body[data-page="category"] .news-card .policy-highlight {
+  color: #374151;
+}
+
 @media (max-width: 759px) {
   body[data-page="category"] {
     -webkit-font-smoothing: antialiased;
@@ -86,6 +100,11 @@
     font-weight: 720;
     word-break: keep-all;
     overflow-wrap: anywhere;
+  }
+
+  body[data-page="category"] .news-card .policy-highlight {
+    color: #374151;
+    font-weight: 650;
   }
 
   body[data-page="category"] .app-list-card .policy-facts {

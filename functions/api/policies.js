@@ -111,11 +111,11 @@ function classifyAgeCodes(record) {
   const headline = [title, summary].join(" ");
   const codes = new Set();
 
-  if (/임신·출산/.test(field) || /영유아|유아|영아|신생아|출산|임산부|산모|난임|산후|보육|어린이집|누리과정/.test(source)) {
+  if (/임신·출산/.test(field) || /영유아|유아|영아|신생아|출산|임산부|산모|난임|산후|어린이집|누리과정|보육료|보육수당/.test(source)) {
     codes.add("INFANT_BIRTH");
   }
   if (
-    /아동|어린이|청소년|초등|중등|고등|초·중·고|학교밖|결식아동|아이돌봄|아동수당|교복|입학준비|검정고시|청소년육성|만\s*(?:[6-9]|1[0-8])세/.test(
+    /아동|어린이|청소년|초등|중등|고등|초·중·고|학교밖|결식아동|아이돌봄|아동수당|교복|입학준비|검정고시|청소년육성/.test(
       source,
     ) ||
     (/교육비|학습비|장학금|급식/.test(headline) && /학생|아동|청소년|초등|중등|고등|초·중·고|초중고|학교/.test(source))

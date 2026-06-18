@@ -1,6 +1,6 @@
 (() => {
   if (document.body.dataset.page !== "category") return;
-  window.GG24_MATCH_FIX_VERSION = "9";
+  window.GG24_MATCH_FIX_VERSION = "10";
 
   const directSmallBusinessPattern =
     /소상공인|소공인|전통시장|시장상인|상인회|개인사업자|자영업|가맹점|상권|점포/;
@@ -182,7 +182,7 @@
 
   async function fetchRegionPolicies(region) {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 26000);
+    const timeout = setTimeout(() => controller.abort(), 45000);
     try {
       const response = await fetch(
         `/api/policies?region=${encodeURIComponent(apiRegionFor(region))}&pages=40&perPage=500&maxItems=2500`,
@@ -222,7 +222,7 @@
       const chunks = await Promise.all(starts.slice(index, index + 2).map(fetchPolicyChunk));
       chunks.forEach((liveData) => {
         if (Array.isArray(liveData?.policies) && liveData.policies.length) {
-          livePolicies = mergePolicies(livePolicies, liveData.policies);
+          livePolicies = mergePolicies(livePolicies, policies);
         }
       });
       if (livePolicies.length) {
@@ -241,8 +241,10 @@
 
   renderCategory();
   [300, 1200, 3500].forEach((delay) => setTimeout(renderCategory, delay));
-  loadPriorityChunks().catch(() => {
-    window.GG24_CATEGORY_FULL_LOAD_DONE = true;
-    renderCategory();
-  });
+  if (!window.GG24_REGION_FIX_VERSION) {
+    loadPriorityChunks().catch(() => {
+      window.GG24_CATEGORY_FULL_LOAD_DONE = true;
+      renderCategory();
+    });
+  }
 })();

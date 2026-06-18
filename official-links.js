@@ -49,13 +49,14 @@
       flex: 0 0 auto;
       display: inline-flex;
       align-items: flex-start;
-      min-height: 42px;
+      justify-content: center;
+      min-height: 40px;
       border: 0;
       background: transparent;
       color: #8d939d;
       margin: 0;
       padding: 0;
-      font-size: 18px;
+      font-size: 16px;
       font-weight: 950;
       line-height: 1.15;
       white-space: nowrap;
@@ -191,13 +192,19 @@
 
     @media (max-width: 759px) {
       body[data-page="category"] .category-tabs {
+        align-items: flex-start;
+        justify-content: center;
         gap: 18px;
+        overflow-x: hidden;
         padding-right: 16px;
         padding-left: 16px;
       }
 
       body[data-page="category"] .category-tabs a,
       body[data-page="category"] .category-tabs .official-links-trigger {
+        display: inline-flex;
+        align-items: flex-start;
+        justify-content: center;
         min-height: 40px;
         font-size: 16px;
         line-height: 1.15;
@@ -243,9 +250,9 @@
 
     @media (max-width: 370px) {
       body[data-page="category"] .category-tabs {
-        gap: 14px;
-        padding-right: 14px;
-        padding-left: 14px;
+        gap: 12px;
+        padding-right: 12px;
+        padding-left: 12px;
       }
 
       body[data-page="category"] .category-tabs a,

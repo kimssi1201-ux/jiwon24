@@ -218,6 +218,17 @@
     if (typeof bindCommonActions === "function") bindCommonActions();
   }
 
+  function observePolicyList() {
+    const list = document.querySelector("#policyList");
+    if (!list || list.dataset.appListObserver) return;
+    list.dataset.appListObserver = "true";
+    new MutationObserver(() => {
+      restylePolicyCards();
+      bindSummaryRow();
+      syncDeadlineState();
+    }).observe(list, { childList: true });
+  }
+
   function syncCategoryTabs() {
     document.querySelectorAll(".category-tabs a").forEach((link) => link.classList.remove("active"));
     const activeHref = isDeadlineSoon ? "deadline=soon" : isNewsMode ? "mode=news" : "";
@@ -264,6 +275,7 @@
     renderCategory = function renderCategoryWithAppStyle(...args) {
       const result = previousRenderCategory(...args);
       restylePolicyCards();
+      observePolicyList();
       bindSummaryRow();
       syncDeadlineState();
       return result;
@@ -271,11 +283,13 @@
   }
 
   restylePolicyCards();
+  observePolicyList();
   bindSummaryRow();
   syncDeadlineState();
   if ((isDeadlineSoon || isNewsMode) && typeof renderCategory === "function") renderCategory();
-  [100, 400, 1200, 3000, 6500].forEach((delay) => setTimeout(() => {
+  [50, 150, 400, 900, 1500, 2600, 4000, 6500, 10000].forEach((delay) => setTimeout(() => {
     restylePolicyCards();
+    observePolicyList();
     bindSummaryRow();
     syncDeadlineState();
   }, delay));

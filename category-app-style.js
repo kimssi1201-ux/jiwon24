@@ -65,15 +65,11 @@
   }
 
   function daysUntilDeadlineValue(deadline) {
-    if (typeof daysUntilDeadline === "function") {
-      const diff = daysUntilDeadline(deadline);
-      if (diff !== null && Number.isFinite(diff)) return diff;
-    }
     const due = deadlineEndDateValue(deadline);
     if (!due) return null;
-    const start = new Date(deadlineToday.getFullYear(), deadlineToday.getMonth(), deadlineToday.getDate());
-    const end = new Date(due.getFullYear(), due.getMonth(), due.getDate(), 23, 59, 59);
-    const diff = Math.ceil((end - start) / 86400000);
+    const start = Date.UTC(deadlineToday.getFullYear(), deadlineToday.getMonth(), deadlineToday.getDate());
+    const end = Date.UTC(due.getFullYear(), due.getMonth(), due.getDate());
+    const diff = Math.round((end - start) / 86400000);
     return Number.isFinite(diff) ? diff : null;
   }
 

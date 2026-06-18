@@ -1,6 +1,6 @@
 (() => {
   if (document.body.dataset.page !== "category") return;
-  window.GG24_REGION_FIX_VERSION = "17";
+  window.GG24_REGION_FIX_VERSION = "19";
 
   const regionAliases = {
     서울: ["서울", "서울특별시"],
@@ -220,8 +220,7 @@
   function matchesRegion(policy, region) {
     if (region === "전체지역") return true;
     if (region === "전국") return isNationalPolicy(policy);
-    if (isNationalPolicy(policy)) return true;
-    if (region === "광주" && isGyeonggiGwangjuPolicy(policy)) return false;
+    if (region === "광주") return isGwangjuMetroPolicy(policy) && !isGyeonggiGwangjuPolicy(policy);
     if (region === "경기" && isGyeonggiGwangjuPolicy(policy)) return true;
 
     const explicitRegion = policyRegion(policy);

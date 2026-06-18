@@ -1,7 +1,7 @@
 (() => {
   if (document.body.dataset.page !== "category") return;
 
-  const version = "5";
+  const version = "6";
   document.documentElement.dataset.gg24GyeonggiGwangjuFix = version;
 
   const ageCodeLabels = {
@@ -120,6 +120,15 @@
         ${place.choices.map((choice) => `<a href="${escapeHtml(choice.href)}">${escapeHtml(choice.label)}</a>`).join("")}
       </span>
     `;
+  }
+
+  if (typeof renderCategory === "function") {
+    const previousRenderCategory = renderCategory;
+    renderCategory = function renderCategoryWithSameNameNotice(...args) {
+      const result = previousRenderCategory(...args);
+      showSameNamePlaceNotice();
+      return result;
+    };
   }
 
   function sourceText(policy) {
@@ -314,5 +323,5 @@
   load();
   showSameNamePlaceNotice();
   [600, 1400, 2600, 4200, 6500].forEach((delay) => setTimeout(load, delay));
-  [300, 1200, 3500].forEach((delay) => setTimeout(showSameNamePlaceNotice, delay));
+  [300, 1200, 3500, 6500, 10000, 15000].forEach((delay) => setTimeout(showSameNamePlaceNotice, delay));
 })();

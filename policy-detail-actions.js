@@ -3,6 +3,8 @@
 
   const toast = document.querySelector("#toast");
   const KAKAO_SDK_SRC = "https://t1.kakaocdn.net/kakao_js_sdk/2.7.6/kakao.min.js";
+  const KAKAO_SHARE_IMAGE_URL =
+    "https://developers.kakao.com/assets/img/about/logos/kakaotalksharing/kakaotalk_sharing_btn_medium.png";
   const SITE_KAKAO_JS_KEY = "";
   let kakaoSdkPromise = null;
 
@@ -40,7 +42,8 @@
       body[data-page="policy"] .detail-actions .primary-button,
       body[data-page="policy"] .detail-actions .ghost-button,
       body[data-page="policy"] .detail-share .ghost-button { min-height: 50px; font-size: 16px; font-weight: 900; }
-      body[data-page="policy"] .detail-share .share-button { border-color: #fee500; background: #fee500; color: #111827; }
+      body[data-page="policy"] .detail-share .share-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-color: #fee500; background: #fee500; color: #111827; }
+      body[data-page="policy"] .detail-share .share-kakao-icon { width: 24px; height: 24px; border-radius: 7px; flex: 0 0 auto; }
       body[data-page="policy"] .detail-share .share-button::before { content: none; display: none; }
       body[data-page="policy"] .detail-section h2 { font-size: 23px; }
       body[data-page="policy"] .detail-section p { font-size: 17px; line-height: 1.85; }
@@ -80,7 +83,7 @@
   }
 
   function kakaoShareImageUrl() {
-    return "https://jiwon24.pages.dev/assets/app-icon-512.png?v=1";
+    return KAKAO_SHARE_IMAGE_URL;
   }
 
   function kakaoKey() {
@@ -170,10 +173,11 @@
   function ensureShareButtons() {
     const head = document.querySelector(".detail-head");
     if (!head) return;
+    const kakaoButtonMarkup = `<img class="share-kakao-icon" src="${KAKAO_SHARE_IMAGE_URL}" alt="" width="24" height="24" loading="lazy" decoding="async" />카카오톡 공유`;
 
     head.querySelectorAll("[data-share-policy]").forEach((button) => {
-      if (button.textContent.trim() !== "💬 카카오톡 공유") {
-        button.textContent = "💬 카카오톡 공유";
+      if (!button.querySelector(".share-kakao-icon")) {
+        button.innerHTML = kakaoButtonMarkup;
       }
     });
 
@@ -182,7 +186,7 @@
     row.className = "detail-share";
     row.setAttribute("aria-label", "정책 공유");
     row.innerHTML = `
-      <button class="ghost-button share-button" type="button" data-share-policy>💬 카카오톡 공유</button>
+      <button class="ghost-button share-button" type="button" data-share-policy>${kakaoButtonMarkup}</button>
       <button class="ghost-button copy-button" type="button" data-copy-link>🔗 링크복사</button>
     `;
     head.appendChild(row);

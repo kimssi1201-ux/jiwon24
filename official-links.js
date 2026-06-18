@@ -29,22 +29,22 @@
       display: inline-flex;
       align-items: center;
       min-height: 32px;
-      border: 1px solid #bfdbfe;
+      border: 1px solid #2563eb;
       border-radius: 999px;
-      background: #eff6ff;
-      color: #2563eb;
+      background: #2563eb;
+      color: #ffffff;
       margin: 0;
-      padding: 0 10px;
+      padding: 0 12px;
       font-size: inherit;
-      font-weight: 900;
+      font-weight: 950;
       white-space: nowrap;
     }
 
     .desktop-nav .official-links-trigger:hover,
     .desktop-nav .official-links-trigger:focus-visible {
-      border-color: #93c5fd;
-      background: #dbeafe;
-      color: #1d4ed8;
+      border-color: #1d4ed8;
+      background: #1d4ed8;
+      color: #ffffff;
     }
 
     .category-tabs .official-links-trigger {
@@ -52,13 +52,13 @@
       flex: 0 0 auto;
       display: inline-flex;
       align-items: center;
-      min-height: 34px;
-      border: 1px solid #bfdbfe;
+      min-height: 40px;
+      border: 1px solid #2563eb;
       border-radius: 999px;
-      background: #eff6ff;
-      color: #2563eb;
+      background: #2563eb;
+      color: #ffffff;
       margin: 0;
-      padding: 0 10px;
+      padding: 0 14px;
       font-size: 16px;
       font-weight: 950;
       line-height: 1.15;
@@ -66,9 +66,9 @@
     }
 
     body.official-links-open .category-tabs .official-links-trigger {
-      border-color: #93c5fd;
-      background: #dbeafe;
-      color: #1d4ed8;
+      border-color: #1d4ed8;
+      background: #1d4ed8;
+      color: #ffffff;
     }
 
     body.official-links-open .category-tabs .official-links-trigger::after {
@@ -190,7 +190,7 @@
 
     @media (max-width: 759px) {
       body[data-page="category"] .category-tabs {
-        gap: 16px;
+        gap: 12px;
         padding-right: 16px;
         padding-left: 16px;
       }
@@ -202,10 +202,10 @@
       }
 
       body[data-page="category"] .category-tabs .official-links-trigger {
-        min-height: 30px;
-        padding: 0 9px;
-        font-size: 15px;
-        line-height: 1;
+        min-height: 40px;
+        padding: 0 12px;
+        font-size: 16px;
+        line-height: 1.15;
       }
 
       body[data-page="category"] .header-inner::after {
@@ -248,7 +248,7 @@
 
     @media (max-width: 370px) {
       body[data-page="category"] .category-tabs {
-        gap: 12px;
+        gap: 10px;
         padding-right: 14px;
         padding-left: 14px;
       }
@@ -258,8 +258,9 @@
       }
 
       body[data-page="category"] .category-tabs .official-links-trigger {
-        padding: 0 8px;
-        font-size: 14px;
+        min-height: 38px;
+        padding: 0 10px;
+        font-size: 15px;
       }
     }
   `;

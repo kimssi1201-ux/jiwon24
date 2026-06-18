@@ -3,6 +3,29 @@
 }
 
 @media (max-width: 759px) {
+  body[data-page="category"] {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body[data-page="category"] .brand-copy strong,
+  body[data-page="category"] .category-tabs a,
+  body[data-page="category"] .filter-summary-row button,
+  body[data-page="category"] .app-list-card .badge,
+  body[data-page="category"] .app-list-card h3,
+  body[data-page="category"] .app-list-card .policy-facts dt {
+    font-weight: 820;
+  }
+
+  body[data-page="category"] .brand-copy strong {
+    font-size: 24px;
+  }
+
+  body[data-page="category"] .category-tabs a {
+    font-size: 19px;
+    line-height: 1.2;
+  }
+
   body[data-page="category"] .filter-summary-row button {
     min-height: 52px;
     align-items: center;
@@ -33,5 +56,49 @@
     width: 10px;
     height: 10px;
     box-shadow: 0 11px 0 5px rgba(95, 103, 114, 0.18);
+  }
+
+  body[data-page="category"] .policy-card.app-list-card {
+    padding: 18px 17px 17px;
+  }
+
+  body[data-page="category"] .app-list-card .policy-body {
+    gap: 11px;
+  }
+
+  body[data-page="category"] .app-list-card .badge {
+    font-size: 14px;
+    line-height: 1.15;
+  }
+
+  body[data-page="category"] .app-list-card h3 {
+    font-size: 23px;
+    line-height: 1.36;
+    letter-spacing: 0;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
+
+  body[data-page="category"] .app-list-card .policy-highlight {
+    color: #7f2d2d;
+    font-size: 18px;
+    line-height: 1.58;
+    font-weight: 720;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
+
+  body[data-page="category"] .app-list-card .policy-facts {
+    grid-template-columns: 86px minmax(0, 1fr);
+    gap: 8px 12px;
+    font-size: 17px;
+    line-height: 1.48;
+  }
+
+  body[data-page="category"] .app-list-card .policy-facts dd {
+    color: #2f3744;
+    font-weight: 720;
+    word-break: keep-all;
+    overflow-wrap: anywhere;
   }
 }

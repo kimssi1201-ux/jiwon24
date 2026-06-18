@@ -115,11 +115,19 @@
     showMessage(message);
   }
 
+  async function nativeShareOrCopy(data) {
+    if (navigator.share) {
+      await navigator.share({ title: data.title, text: data.text, url: data.url });
+      return true;
+    }
+    await copyShareUrl(data, "링크를 복사했어요. 카카오톡에 붙여넣어 공유할 수 있어요.");
+    return false;
+  }
+
   async function sendKakaoShare(data) {
     const key = kakaoKey();
     if (!key) {
-      await copyShareUrl(data, "카카오 키를 넣으면 이미지 공유가 켜져요. 지금은 링크를 복사했어요.");
-      return false;
+      return nativeShareOrCopy(data);
     }
 
     const Kakao = await loadKakaoSdk();

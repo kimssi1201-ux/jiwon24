@@ -100,6 +100,80 @@ function inferRegion(record) {
   return regionPatterns.find(([, pattern]) => pattern.test(source))?.[0] || "전국";
 }
 
+function classifyAgeCodes(record) {
+  const title = value(record, "서비스명");
+  const summary = value(record, "서비스목적요약");
+  const target = value(record, "지원대상");
+  const criteria = value(record, "선정기준");
+  const support = value(record, "지원내용");
+  const field = value(record, "서비스분야");
+  const source = [title, summary, target, criteria, support, field].join(" ");
+  const headline = [title, summary].join(" ");
+  const codes = new Set();
+
+  if (/임신·출산/.test(field) || /영유아|유아|영아|신생아|출산|임산부|산모|난임|산후|보육|어린이집|누리과정/.test(source)) {
+    codes.add("INFANT_BIRTH");
+  }
+  if (
+    /아동|어린이|청소년|초등|중등|고등|초·중·고|학교밖|결식아동|아이돌봄|아동수당|교복|입학준비|검정고시|청소년육성|만\s*(?:[6-9]|1[0-8])세/.test(
+      source,
+    ) ||
+    (/교육비|학습비|장학금|급식/.test(headline) && /학생|아동|청소년|초등|중등|고등|초·중·고|초중고|학교/.test(source))
+  ) {
+    codes.add("CHILD_TEEN");
+  }
+  if (/청년|대학생|취업준비|구직|사회초년생|청년창업|청년월세|만\s*(?:1[9]|2[0-9]|3[0-9])세/.test(source)) {
+    codes.add("YOUTH");
+  }
+  if (/중장년|중년|장년|어르신|노인|고령|경로|노후|기초연금|노인일자리|만\s*(?:4[0-9]|5[0-9]|6[0-9]|[78][0-9])세/.test(source)) {
+    codes.add("MIDDLE_SENIOR");
+  }
+
+  return [...codes];
+}
+
+function classifyTargetCodes(record) {
+  const title = value(record, "서비스명");
+  const summary = value(record, "서비스목적요약");
+  const target = value(record, "지원대상");
+  const criteria = value(record, "선정기준");
+  const support = value(record, "지원내용");
+  const userType = value(record, "사용자구분");
+  const field = value(record, "서비스분야");
+  const source = [title, summary, target, criteria, support, userType, field].join(" ");
+  const codes = new Set();
+
+  if (/국가유공자|보훈|참전|독립유공|상이군경|5\.?18|민주유공|의사상자|유족|재향군인/.test(source)) {
+    codes.add("VETERAN");
+  }
+  if (/장애인|장애 정도|발달장애|중증장애|장애수당|장애연금|장애인복지/.test(source)) {
+    codes.add("DISABLED");
+  }
+  if (/소상공인/.test(userType) || /소상공인|소공인|전통시장|시장상인|상인회|개인사업자|자영업|가맹점|상권|점포/.test(source)) {
+    codes.add("SMALL_BUSINESS");
+  }
+  if (/농림축산어업/.test(field) || /농업|어업|임업|축산|농어업|농업인|어업인|어선|수산|귀농|귀어|귀촌/.test(source)) {
+    codes.add("FARM_FISHERY");
+  }
+  if (/저소득|기초생활|수급자|차상위|중위소득|생계급여|의료급여|주거급여|취약계층|한부모|긴급복지/.test(source)) {
+    codes.add("LOW_INCOME");
+  }
+  if (/신혼|예비부부|신혼부부|결혼|혼인|난임부부|청년부부/.test(source)) {
+    codes.add("NEWLYWED");
+  }
+  const hasForeignerPositiveSignal =
+    /다문화|결혼이민|이주민|중도입국|새터민|북한이탈|국적취득|재한외국인|등록외국인|외국국적동포|외국인근로자|외국인\s*(주민|아동|청소년|여성|노동자|대상|지원)/.test(
+      source,
+    );
+  const hasForeignerExclusionSignal =
+    /외국인[^.\n\r]{0,80}(제외|불가|아님|미포함|제한)|외국국적[^.\n\r]{0,80}(제외|불가|아님)|대한민국\s*국적/.test(source);
+  if (hasForeignerPositiveSignal || (/외국인/.test(source) && !hasForeignerExclusionSignal)) {
+    codes.add("FOREIGNER_MULTICULTURAL");
+  }
+
+  return [...codes];
+}
+
 function inferBenefit(record) {
   const support = value(record, "지원내용");
   const match = support.match(/(?:최대|월|연|분기|인당|가구당|회당)?\s*[0-9][0-9,.]*\s*(?:만원|천원|억원|원|%)/);
@@ -135,6 +209,9 @@ function policyFromRecord(record, index) {
   const type = inferType(record);
   const region = inferRegion(record);
   const summary = value(record, "서비스목적요약", value(record, "지원내용", "공식 공고에서 상세 조건을 확인하세요."));
+  const serviceField = value(record, "서비스분야", "공공서비스");
+  const userType = value(record, "사용자구분");
+  const supportKind = value(record, "지원유형");
 
   return {
     id: `gov24-${serviceId.replace(/[^a-zA-Z0-9_-]/g, "-")}`,
@@ -149,7 +226,12 @@ function policyFromRecord(record, index) {
     target: clip(value(record, "지원대상", "공식 공고 확인"), 110),
     method: clip(value(record, "신청방법", value(record, "접수기관", "공식 페이지에서 확인")), 90),
     summary: clip(summary.split(/(?<=[.!?。])\s+|(?:\s*-\s*)/)[0] || summary, 120),
-    tags: [type, value(record, "서비스분야", "공공서비스"), region, value(record, "소관기관유형")].filter(Boolean).slice(0, 4),
+    userType,
+    serviceField,
+    supportKind,
+    ageCodes: classifyAgeCodes(record),
+    targetCodes: classifyTargetCodes(record),
+    tags: [type, serviceField, region, value(record, "소관기관유형")].filter(Boolean).slice(0, 4),
     sourceUrl: safeUrl(record["상세조회URL"], serviceId),
     featured: false,
   };

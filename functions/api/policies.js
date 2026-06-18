@@ -421,7 +421,7 @@ export async function onRequestGet({ request, env }) {
     const payload = await fetchPolicies(
       serviceKey,
       requestedRegion && requestedRegion !== "전체지역" ? Math.min(pages, 12) : pages,
-      perPage,
+      requestedRegion && requestedRegion !== "전체지역" ? Math.min(perPage, 100) : perPage,
       requestedRegion && requestedRegion !== "전체지역" ? 12000 : maxItems,
       requestedRegion && requestedRegion !== "전체지역" ? 1 : startPage,
       requestedRegion && requestedRegion !== "전체지역" ? regionApiParams(requestedRegion) : {},

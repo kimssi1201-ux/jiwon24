@@ -1,6 +1,8 @@
 (() => {
   const header = document.querySelector(".header-inner");
-  if (!header || header.querySelector(".official-links-button")) return;
+  const desktopNav = document.querySelector(".desktop-nav");
+  const categoryTabs = document.querySelector(".category-tabs");
+  if (!header && !desktopNav && !categoryTabs) return;
 
   const links = [
     { name: "정부24·보조금24", desc: "민원, 정부혜택, 정책정보", url: "https://plus.gov.kr/" },
@@ -15,51 +17,52 @@
 
   const style = document.createElement("style");
   style.textContent = `
-    .official-links-button {
-      min-height: 38px;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      border: 1px solid var(--line, #dfe7e5);
-      border-radius: 999px;
-      background: #ffffff;
-      color: #172026;
-      padding: 8px 12px;
-      font-size: 13px;
-      font-weight: 900;
+    .official-links-trigger {
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    .desktop-nav .official-links-trigger {
+      border: 0;
+      background: transparent;
+      color: inherit;
+      padding: 0;
+      font-size: inherit;
+      font-weight: inherit;
       white-space: nowrap;
-      box-shadow: 0 6px 18px rgba(19, 32, 38, 0.08);
     }
 
-    .official-links-button-icon {
-      width: 16px;
-      height: 16px;
+    .desktop-nav .official-links-trigger:hover,
+    .desktop-nav .official-links-trigger:focus-visible {
+      color: var(--teal-dark, #0f766e);
+    }
+
+    .category-tabs .official-links-trigger {
       position: relative;
-      display: inline-block;
-      border-radius: 50%;
-      background: #eff6ff;
+      flex: 0 0 auto;
+      min-height: 42px;
+      border: 0;
+      background: transparent;
+      color: #8d939d;
+      padding: 0;
+      font-size: 18px;
+      font-weight: 950;
+      white-space: nowrap;
     }
 
-    .official-links-button-icon::before,
-    .official-links-button-icon::after {
+    body.official-links-open .category-tabs .official-links-trigger {
+      color: #111827;
+    }
+
+    body.official-links-open .category-tabs .official-links-trigger::after {
       content: "";
       position: absolute;
-      border-radius: 999px;
-      background: #2563eb;
-    }
-
-    .official-links-button-icon::before {
-      left: 4px;
-      top: 4px;
-      width: 8px;
-      height: 8px;
-    }
-
-    .official-links-button-icon::after {
-      left: 7px;
-      top: 2px;
-      width: 2px;
-      height: 12px;
+      left: 0;
+      right: 0;
+      bottom: -1px;
+      height: 3px;
+      border-radius: 999px 999px 0 0;
+      background: #111827;
     }
 
     .official-links-backdrop {
@@ -102,7 +105,7 @@
     .official-links-head h2 {
       margin: 0;
       color: #111827;
-      font-size: 19px;
+      font-size: 20px;
       line-height: 1.2;
       font-weight: 950;
     }
@@ -117,6 +120,7 @@
       font-size: 22px;
       line-height: 1;
       font-weight: 700;
+      cursor: pointer;
     }
 
     .official-links-list {
@@ -134,6 +138,7 @@
       border-radius: 10px;
       background: #ffffff;
       padding: 14px;
+      text-decoration: none;
     }
 
     .official-link-card strong {
@@ -152,14 +157,15 @@
     }
 
     .official-link-card::after {
-      content: "↗";
-      width: 30px;
-      height: 30px;
+      content: "열기";
+      width: 42px;
+      min-height: 30px;
       display: inline-grid;
       place-items: center;
       border-radius: 999px;
       background: #eff6ff;
       color: #2563eb;
+      font-size: 12px;
       font-weight: 950;
     }
 
@@ -173,41 +179,8 @@
     }
 
     @media (max-width: 759px) {
-      .header-inner {
-        position: relative;
-      }
-
       body[data-page="category"] .header-inner::after {
         content: none;
-      }
-
-      .official-links-button {
-        position: absolute;
-        right: 14px;
-        top: 50%;
-        width: 42px;
-        height: 42px;
-        min-height: 42px;
-        transform: translateY(-50%);
-        justify-content: center;
-        border: 0;
-        background: transparent;
-        padding: 0;
-        box-shadow: none;
-      }
-
-      .official-links-button-text,
-      .official-links-button-icon {
-        display: none;
-      }
-
-      .official-links-button::before {
-        content: "";
-        width: 5px;
-        height: 5px;
-        border-radius: 50%;
-        background: #111827;
-        box-shadow: 0 -9px 0 #111827, 0 9px 0 #111827;
       }
 
       .official-links-backdrop {
@@ -228,7 +201,7 @@
       }
 
       .official-links-head h2 {
-        font-size: 20px;
+        font-size: 21px;
       }
 
       .official-link-card {
@@ -246,21 +219,41 @@
   `;
   document.head.append(style);
 
-  const button = document.createElement("button");
-  button.type = "button";
-  button.className = "official-links-button";
-  button.setAttribute("aria-haspopup", "dialog");
-  button.setAttribute("aria-expanded", "false");
-  button.setAttribute("aria-label", "공식기관 바로가기 열기");
-  button.innerHTML = `<span class="official-links-button-icon" aria-hidden="true"></span><span class="official-links-button-text">공식기관</span>`;
-  header.append(button);
+  const triggers = [];
+
+  function makeTrigger(className) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `official-links-trigger ${className}`;
+    button.setAttribute("aria-haspopup", "dialog");
+    button.setAttribute("aria-expanded", "false");
+    button.textContent = "관공서 모음";
+    button.addEventListener("click", () => {
+      if (document.body.classList.contains("official-links-open")) closeMenu();
+      else openMenu();
+    });
+    triggers.push(button);
+    return button;
+  }
+
+  if (desktopNav && !desktopNav.querySelector(".official-links-trigger")) {
+    desktopNav.append(makeTrigger("official-links-nav-button"));
+  }
+
+  if (categoryTabs && !categoryTabs.querySelector(".official-links-trigger")) {
+    categoryTabs.append(makeTrigger("official-links-tab-button"));
+  }
+
+  if (!desktopNav && !categoryTabs && header && !header.querySelector(".official-links-trigger")) {
+    header.append(makeTrigger("official-links-header-button"));
+  }
 
   const backdrop = document.createElement("div");
   backdrop.className = "official-links-backdrop";
   backdrop.innerHTML = `
     <section class="official-links-panel" role="dialog" aria-modal="true" aria-labelledby="officialLinksTitle">
       <div class="official-links-head">
-        <h2 id="officialLinksTitle">공식기관 바로가기</h2>
+        <h2 id="officialLinksTitle">관공서 모음</h2>
         <button type="button" class="official-links-close" aria-label="닫기">×</button>
       </div>
       <div class="official-links-list">
@@ -280,21 +273,20 @@
   `;
   document.body.append(backdrop);
 
+  function setExpanded(value) {
+    triggers.forEach((trigger) => trigger.setAttribute("aria-expanded", String(value)));
+  }
+
   function closeMenu() {
     document.body.classList.remove("official-links-open");
-    button.setAttribute("aria-expanded", "false");
+    setExpanded(false);
   }
 
   function openMenu() {
     document.body.classList.add("official-links-open");
-    button.setAttribute("aria-expanded", "true");
+    setExpanded(true);
     backdrop.querySelector(".official-links-close")?.focus();
   }
-
-  button.addEventListener("click", () => {
-    if (document.body.classList.contains("official-links-open")) closeMenu();
-    else openMenu();
-  });
 
   backdrop.addEventListener("click", (event) => {
     if (event.target === backdrop || event.target.closest(".official-links-close")) closeMenu();

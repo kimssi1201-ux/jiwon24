@@ -10,6 +10,9 @@
 /policy.html
   Cache-Control: no-cache, no-store, must-revalidate
 
+/reset.html
+  Cache-Control: no-cache, no-store, must-revalidate
+
 /manifest.webmanifest
   Cache-Control: no-cache, no-store, must-revalidate
 

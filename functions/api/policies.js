@@ -84,7 +84,9 @@ function inferType(record) {
   const refundPattern = /환급|공제|감면|세액|지방세|국세|미환급|요금\s*감면|보험료\s*(환급|감면|지원)/;
   const loanPattern = /대출|융자|신용보증|보증서|보증료|저리|금리|상환|담보|이자\s*(지원|보전|차액|보조)|자금\s*(대출|융자)|전세자금|구입자금/;
   const supportPattern = /지원|지급|수당|축하금|장려금|보조금|급여|바우처|이용권|상품권|지역화폐|교통비|월세|주거비|의료비|교육비|장학금|급식|돌봄|현금|현물/;
+  const localCurrencyPattern = /지역화폐|지역사랑상품권|사랑상품권|지역상품권|페이/;
 
+  if (localCurrencyPattern.test(title)) return "지원금";
   if (refundPattern.test(source) && !/지원금|보조금|장려금|수당/.test(headline)) return "환급금";
   if (loanPattern.test(source)) return "대출";
   if (supportPattern.test(source)) return "지원금";

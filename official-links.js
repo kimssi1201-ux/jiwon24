@@ -28,51 +28,52 @@
     .desktop-nav .official-links-trigger {
       display: inline-flex;
       align-items: center;
-      min-height: 32px;
-      border: 1px solid #2563eb;
-      border-radius: 999px;
-      background: #2563eb;
-      color: #ffffff;
+      min-height: 30px;
+      border: 0;
+      background: transparent;
+      color: inherit;
       margin: 0;
-      padding: 0 12px;
+      padding: 0;
       font-size: inherit;
-      font-weight: 950;
+      font-weight: inherit;
       white-space: nowrap;
     }
 
     .desktop-nav .official-links-trigger:hover,
     .desktop-nav .official-links-trigger:focus-visible {
-      border-color: #1d4ed8;
-      background: #1d4ed8;
-      color: #ffffff;
+      color: var(--teal-dark, #0f766e);
     }
 
     .category-tabs .official-links-trigger {
       position: relative;
       flex: 0 0 auto;
       display: inline-flex;
-      align-items: center;
-      min-height: 40px;
-      border: 1px solid #2563eb;
-      border-radius: 999px;
-      background: #2563eb;
-      color: #ffffff;
+      align-items: flex-start;
+      min-height: 42px;
+      border: 0;
+      background: transparent;
+      color: #8d939d;
       margin: 0;
-      padding: 0 14px;
-      font-size: 16px;
+      padding: 0;
+      font-size: 18px;
       font-weight: 950;
       line-height: 1.15;
       white-space: nowrap;
     }
 
     body.official-links-open .category-tabs .official-links-trigger {
-      border-color: #1d4ed8;
-      background: #1d4ed8;
-      color: #ffffff;
+      color: #111827;
     }
 
     body.official-links-open .category-tabs .official-links-trigger::after {
-      content: none;
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -1px;
+      height: 3px;
+      border-radius: 999px 999px 0 0;
+      background: #111827;
     }
 
     .official-links-backdrop {
@@ -190,20 +191,14 @@
 
     @media (max-width: 759px) {
       body[data-page="category"] .category-tabs {
-        gap: 12px;
+        gap: 18px;
         padding-right: 16px;
         padding-left: 16px;
       }
 
-      body[data-page="category"] .category-tabs a {
-        min-height: 40px;
-        font-size: 16px;
-        line-height: 1.15;
-      }
-
+      body[data-page="category"] .category-tabs a,
       body[data-page="category"] .category-tabs .official-links-trigger {
         min-height: 40px;
-        padding: 0 12px;
         font-size: 16px;
         line-height: 1.15;
       }
@@ -248,18 +243,13 @@
 
     @media (max-width: 370px) {
       body[data-page="category"] .category-tabs {
-        gap: 10px;
+        gap: 14px;
         padding-right: 14px;
         padding-left: 14px;
       }
 
-      body[data-page="category"] .category-tabs a {
-        font-size: 15px;
-      }
-
+      body[data-page="category"] .category-tabs a,
       body[data-page="category"] .category-tabs .official-links-trigger {
-        min-height: 38px;
-        padding: 0 10px;
         font-size: 15px;
       }
     }

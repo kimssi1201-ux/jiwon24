@@ -19,7 +19,6 @@
   }
 
   function applyAgencyLabels() {
-    document.querySelector(".filter-summary-row .summary-popular")?.remove();
     document.querySelectorAll(".policy-card .badge.agency").forEach((badge) => {
       if (badge.textContent.trim() !== "국가기관") return;
       const policy = findPolicy(badge.closest(".policy-card"));

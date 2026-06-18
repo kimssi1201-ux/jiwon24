@@ -1,6 +1,6 @@
 (() => {
   if (document.body.dataset.page !== "category") return;
-  window.GG24_REGION_FIX_VERSION = "19";
+  window.GG24_REGION_FIX_VERSION = "20";
 
   const regionAliases = {
     서울: ["서울", "서울특별시"],
@@ -190,6 +190,10 @@
     return aliases[compact] || compact;
   }
 
+  function apiRegionFor(region) {
+    return region === "광주" ? "광주광역시" : region;
+  }
+
   function currentFilters() {
     const liveParams = new URLSearchParams(location.search);
     const filters = typeof readCategoryFilters === "function"
@@ -330,7 +334,7 @@
 
     try {
       const response = await fetch(
-        `/api/policies?region=${encodeURIComponent(region)}&pages=40&perPage=500&maxItems=2500`,
+        `/api/policies?region=${encodeURIComponent(apiRegionFor(region))}&pages=40&perPage=500&maxItems=2500`,
         {
           headers: { Accept: "application/json" },
           cache: "no-store",

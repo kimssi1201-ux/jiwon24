@@ -42,7 +42,7 @@
       body[data-page="policy"] .detail-actions .ghost-button,
       body[data-page="policy"] .detail-share .ghost-button { min-height: 50px; font-size: 16px; font-weight: 900; }
       body[data-page="policy"] .detail-share .share-button { border-color: #fee500; background: #fee500; color: #111827; }
-      body[data-page="policy"] .detail-share .share-button::before { content: ""; display: inline-block; width: 9px; height: 9px; margin-right: 7px; border-radius: 999px; background: #111827; vertical-align: 1px; }
+      body[data-page="policy"] .detail-share .share-button::before { content: none; display: none; }
       body[data-page="policy"] .detail-section h2 { font-size: 23px; }
       body[data-page="policy"] .detail-section p { font-size: 17px; line-height: 1.85; }
       body[data-page="policy"] .detail-highlight strong,
@@ -164,7 +164,7 @@
     if (!head) return;
 
     head.querySelectorAll("[data-share-policy]").forEach((button) => {
-      button.textContent = "카카오톡 공유";
+      button.textContent = "💬 카카오톡 공유";
     });
 
     if (head.querySelector(".detail-share")) return;
@@ -172,10 +172,24 @@
     row.className = "detail-share";
     row.setAttribute("aria-label", "정책 공유");
     row.innerHTML = `
-      <button class="ghost-button share-button" type="button" data-share-policy>카카오톡 공유</button>
-      <button class="ghost-button copy-button" type="button" data-copy-link>링크복사</button>
+      <button class="ghost-button share-button" type="button" data-share-policy>💬 카카오톡 공유</button>
+      <button class="ghost-button copy-button" type="button" data-copy-link>🔗 링크복사</button>
     `;
     head.appendChild(row);
+  }
+
+  function ensureActionEmojis() {
+    document.querySelectorAll("[data-copy-link]").forEach((button) => {
+      button.textContent = "🔗 링크복사";
+    });
+
+    document.querySelectorAll(".detail-actions .primary-button").forEach((button) => {
+      button.textContent = "📝 신청하기";
+    });
+
+    document.querySelectorAll(".detail-actions .ghost-button").forEach((button) => {
+      button.textContent = "📋 목록 보기";
+    });
   }
 
   function ensureTags() {
@@ -228,6 +242,7 @@
   function enhanceDetail() {
     injectDetailStyle();
     ensureShareButtons();
+    ensureActionEmojis();
     ensureTags();
     ensureGuide();
   }

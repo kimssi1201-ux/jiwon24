@@ -156,7 +156,9 @@
     if (!head) return;
 
     head.querySelectorAll("[data-share-policy]").forEach((button) => {
-      button.textContent = "💬 카카오톡 공유";
+      if (button.textContent.trim() !== "💬 카카오톡 공유") {
+        button.textContent = "💬 카카오톡 공유";
+      }
     });
 
     if (head.querySelector(".detail-share")) return;
@@ -172,15 +174,21 @@
 
   function ensureActionEmojis() {
     document.querySelectorAll("[data-copy-link]").forEach((button) => {
-      button.textContent = "🔗 링크복사";
+      if (button.textContent.trim() !== "🔗 링크복사") {
+        button.textContent = "🔗 링크복사";
+      }
     });
 
     document.querySelectorAll(".detail-actions .primary-button").forEach((button) => {
-      button.textContent = "📝 신청하기";
+      if (button.textContent.trim() !== "📝 신청하기") {
+        button.textContent = "📝 신청하기";
+      }
     });
 
     document.querySelectorAll(".detail-actions .ghost-button").forEach((button) => {
-      button.textContent = "📋 목록 보기";
+      if (button.textContent.trim() !== "📋 목록 보기") {
+        button.textContent = "📋 목록 보기";
+      }
     });
   }
 
@@ -261,7 +269,18 @@
   });
 
   const detail = document.querySelector("#policyDetail");
-  if (detail) new MutationObserver(enhanceDetail).observe(detail, { childList: true, subtree: true });
+  if (detail) {
+    let pendingEnhance = false;
+    const observer = new MutationObserver(() => {
+      if (pendingEnhance) return;
+      pendingEnhance = true;
+      requestAnimationFrame(() => {
+        pendingEnhance = false;
+        enhanceDetail();
+      });
+    });
+    observer.observe(detail, { childList: true });
+  }
   enhanceDetail();
   [150, 600, 1500, 3500].forEach((delay) => setTimeout(enhanceDetail, delay));
 })();

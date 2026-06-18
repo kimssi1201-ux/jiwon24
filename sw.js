@@ -1,4 +1,4 @@
-const CACHE_NAME = "gov-support25-site-v82";
+const CACHE_NAME = "gov-support25-site-v84";
 const ASSETS = [
   "./",
   "./index.html",
@@ -23,7 +23,7 @@ const ASSETS = [
   "./age-merge-fix.js?v=1",
   "./target-foreigner-fix.js?v=2",
   "./region-label-fix.js?v=6",
-  "./gyeonggi-gwangju-search-fix.js?v=1",
+  "./gyeonggi-gwangju-search-fix.js?v=2",
   "./category-match-fix.js?v=11",
   "./manifest.webmanifest",
   "./assets/claim-desk-hero.svg",
@@ -76,6 +76,7 @@ self.addEventListener("fetch", (event) => {
     url.pathname.endsWith("/age-merge-fix.js") ||
     url.pathname.endsWith("/target-foreigner-fix.js") ||
     url.pathname.endsWith("/region-label-fix.js") ||
+    url.pathname.endsWith("/gyeonggi-gwangju-search-fix.js") ||
     url.pathname.endsWith("/category-match-fix.js") ||
     url.pathname.endsWith("/policy-live-detail.js") ||
     event.request.mode === "navigate";

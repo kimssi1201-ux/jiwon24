@@ -1,11 +1,12 @@
-const CACHE_NAME = "gov-support25-site-v106";
+const CACHE_NAME = "gov-support25-site-v107";
 const ASSETS = [
   "./",
   "./styles.css?v=8",
   "./desktop.css",
   "./policy-detail.css?v=1",
   "./policy-detail.css?v=2",
-  "./category-app-style.css?v=4",
+  "./category-app-style.css?v=5",
+  "./popular-filter-fix.css?v=1",
   "./home-focus.css?v=2",
   "./deadline.js?v=2",
   "./deadline.js?v=3",
@@ -27,8 +28,9 @@ const ASSETS = [
   "./target-foreigner-fix.js?v=2",
   "./region-label-fix.js?v=6",
   "./gyeonggi-gwangju-search-fix.js?v=6",
-  "./category-app-style.js?v=10",
-  "./agency-label-fix.js?v=2",
+  "./category-app-style.js?v=11",
+  "./agency-label-fix.js?v=3",
+  "./popular-filter-fix.js?v=1",
   "./category-match-fix.js?v=11",
   "./manifest.webmanifest",
   "./assets/claim-desk-hero.svg",

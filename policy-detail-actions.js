@@ -3,7 +3,6 @@
 
   const toast = document.querySelector("#toast");
   const KAKAO_SDK_SRC = "https://t1.kakaocdn.net/kakao_js_sdk/2.7.6/kakao.min.js";
-  const SHARE_IMAGE_URL = "https://jiwon24.pages.dev/assets/app-icon-512.png";
   const SITE_KAKAO_JS_KEY = "";
   let kakaoSdkPromise = null;
 
@@ -72,7 +71,12 @@
   function shareText() {
     const title = textOf(".detail-head h1") || document.title;
     const summary = textOf(".detail-head p") || "지원금 올데이에서 정책 정보를 확인해 보세요.";
-    return { title, text: summary, url: location.href, imageUrl: SHARE_IMAGE_URL };
+    return { title, text: summary, url: location.href };
+  }
+
+  function kakaoShareText(data) {
+    const text = `${data.title}\n${data.text}`.replace(/\s+/g, " ").trim();
+    return text.length > 200 ? `${text.slice(0, 197)}...` : text;
   }
 
   function kakaoKey() {
@@ -134,25 +138,13 @@
     if (!Kakao?.isInitialized?.()) Kakao.init(key);
 
     Kakao.Share.sendDefault({
-      objectType: "feed",
-      content: {
-        title: data.title,
-        description: data.text,
-        imageUrl: data.imageUrl,
-        link: {
-          mobileWebUrl: data.url,
-          webUrl: data.url,
-        },
+      objectType: "text",
+      text: kakaoShareText(data),
+      link: {
+        mobileWebUrl: data.url,
+        webUrl: data.url,
       },
-      buttons: [
-        {
-          title: "정책 보기",
-          link: {
-            mobileWebUrl: data.url,
-            webUrl: data.url,
-          },
-        },
-      ],
+      buttonTitle: "정책 보기",
       installTalk: true,
     });
 

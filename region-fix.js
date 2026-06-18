@@ -1,6 +1,6 @@
 (() => {
   if (document.body.dataset.page !== "category") return;
-  window.GG24_REGION_FIX_VERSION = "20";
+  window.GG24_REGION_FIX_VERSION = "21";
 
   const regionAliases = {
     서울: ["서울", "서울특별시"],
@@ -330,7 +330,7 @@
 
   async function fetchRegionPolicies(region) {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 26000);
+    const timeout = setTimeout(() => controller.abort(), 45000);
 
     try {
       const response = await fetch(

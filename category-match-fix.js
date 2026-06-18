@@ -1,6 +1,6 @@
 (() => {
   if (document.body.dataset.page !== "category") return;
-  window.GG24_MATCH_FIX_VERSION = "10";
+  window.GG24_MATCH_FIX_VERSION = "11";
 
   const directSmallBusinessPattern =
     /소상공인|소공인|전통시장|시장상인|상인회|개인사업자|자영업|가맹점|상권|점포/;
@@ -9,10 +9,31 @@
   const genericTeenAgePattern = /(?:만\s*)?(?:[6-9]|1[0-7])세\s*이상/;
   const genericUsePattern = /누구든지|가입 가능|발급 가능|소비자|사용자|지역제한 없음/;
   const childSignalPattern = /아동|어린이|청소년|초등|중등|고등|입학|학습|교복/;
+  const ageCodeLabels = {
+    INFANT_BIRTH: "영유아·출산",
+    CHILD_TEEN: "아동·청소년",
+    YOUTH: "청년",
+    MIDDLE_SENIOR: "중장년·어르신",
+  };
+  const targetCodeLabels = {
+    VETERAN: "국가유공자·보훈",
+    DISABLED: "장애인",
+    SMALL_BUSINESS: "소상공인",
+    FARM_FISHERY: "농어업인",
+    LOW_INCOME: "저소득층",
+    NEWLYWED: "신혼부부",
+    FOREIGNER_MULTICULTURAL: "외국인·다문화",
+  };
+
+  function groupsFromCodes(codes, labels) {
+    if (!Array.isArray(codes)) return null;
+    return [...new Set(codes.map((code) => labels[code]).filter(Boolean))];
+  }
 
   const previousTargetGroups = policyTargetGroups;
   policyTargetGroups = function policyTargetGroupsWithTighterBusiness(policy) {
-    let groups = previousTargetGroups(policy);
+    let groups = groupsFromCodes(policy?.targetCodes, targetCodeLabels);
+    if (!groups) groups = previousTargetGroups(policy);
     if (groups.includes("소상공인")) {
       const source = policySearchText(policy);
       if (!directSmallBusinessPattern.test(source)) {
@@ -27,7 +48,8 @@
 
   const previousAgeGroups = policyAgeGroups;
   policyAgeGroups = function policyAgeGroupsWithGenericAgeGuard(policy) {
-    let groups = previousAgeGroups(policy);
+    let groups = groupsFromCodes(policy?.ageCodes, ageCodeLabels);
+    if (!groups) groups = previousAgeGroups(policy);
     const source = policySearchText(policy);
     const headline = [policy.title, policy.summary].join(" ");
     if (
@@ -222,7 +244,7 @@
       const chunks = await Promise.all(starts.slice(index, index + 2).map(fetchPolicyChunk));
       chunks.forEach((liveData) => {
         if (Array.isArray(liveData?.policies) && liveData.policies.length) {
-          livePolicies = mergePolicies(livePolicies, policies);
+          livePolicies = mergePolicies(livePolicies, liveData.policies);
         }
       });
       if (livePolicies.length) {

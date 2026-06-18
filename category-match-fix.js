@@ -1,6 +1,6 @@
 (() => {
   if (document.body.dataset.page !== "category") return;
-  window.GG24_MATCH_FIX_VERSION = "8";
+  window.GG24_MATCH_FIX_VERSION = "9";
 
   const directSmallBusinessPattern =
     /소상공인|소공인|전통시장|시장상인|상인회|개인사업자|자영업|가맹점|상권|점포/;
@@ -80,6 +80,10 @@
       제주특별자치도: "제주",
     };
     return aliases[compact] || compact;
+  }
+
+  function apiRegionFor(region) {
+    return region === "광주" ? "광주광역시" : region;
   }
 
   function removeNationalRegionButton() {
@@ -181,7 +185,7 @@
     const timeout = setTimeout(() => controller.abort(), 26000);
     try {
       const response = await fetch(
-        `/api/policies?region=${encodeURIComponent(region)}&pages=40&perPage=500&maxItems=2500`,
+        `/api/policies?region=${encodeURIComponent(apiRegionFor(region))}&pages=40&perPage=500&maxItems=2500`,
         {
           headers: { Accept: "application/json" },
           cache: "no-store",

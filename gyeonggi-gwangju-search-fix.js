@@ -1,7 +1,7 @@
 (() => {
   if (document.body.dataset.page !== "category") return;
 
-  const version = "4";
+  const version = "5";
   document.documentElement.dataset.gg24GyeonggiGwangjuFix = version;
 
   const ageCodeLabels = {
@@ -59,14 +59,67 @@
     };
   }
 
-  function isGyeonggiGwangjuSearch({ region, query }) {
-    const tokens = String(query || "")
+  function categoryHref(nextFilters = {}) {
+    const filters = { ...readFilters(), ...nextFilters };
+    const params = new URLSearchParams();
+    if (filters.type && filters.type !== "전체") params.set("type", filters.type);
+    if (filters.region && filters.region !== "전체지역") params.set("region", filters.region);
+    if (filters.age && filters.age !== "전체연령") params.set("age", filters.age);
+    if (filters.target && filters.target !== "전체대상") params.set("target", filters.target);
+    if (filters.query) params.set("q", filters.query);
+    const queryString = params.toString();
+    return `category.html${queryString ? `?${queryString}` : ""}`;
+  }
+
+  function queryTokens(query) {
+    return String(query || "")
       .split(/[\s,./|]+/)
       .map(compact)
       .filter(Boolean);
+  }
+
+  function isGyeonggiGwangjuSearch({ region, query }) {
+    const tokens = queryTokens(query);
     const hasGyeonggi = compact(region) === "경기" || tokens.includes("경기") || tokens.includes("경기도");
     const hasGwangju = tokens.includes("광주") || tokens.includes("광주시");
     return /경기도?광주시?/.test(compact(query)) || (hasGyeonggi && hasGwangju);
+  }
+
+  function sameNamePlaceChoices({ region, query }) {
+    const tokens = queryTokens(query);
+    const compactQuery = compact(query);
+    const hasGwangju = tokens.includes("광주") || tokens.includes("광주시") || compactQuery === "광주";
+    const hasQualifier =
+      compact(region) === "경기" ||
+      compact(region) === "광주" ||
+      tokens.includes("경기") ||
+      tokens.includes("경기도") ||
+      tokens.includes("광주광역시") ||
+      /경기도?광주시?/.test(compactQuery);
+
+    if (!hasGwangju || hasQualifier) return null;
+
+    return {
+      label: "광주",
+      message: "광주는 같은 이름의 지역이 있어요. 찾는 지역을 선택하면 결과가 정확해집니다.",
+      choices: [
+        { label: "광주광역시", href: categoryHref({ region: "광주", query: "" }) },
+        { label: "경기 광주시", href: categoryHref({ region: "경기", query: "경기 광주" }) },
+      ],
+    };
+  }
+
+  function showSameNamePlaceNotice() {
+    const notice = document.querySelector("#resultNotice");
+    if (!notice) return;
+    const place = sameNamePlaceChoices(readFilters());
+    if (!place) return;
+    notice.innerHTML = `
+      <span>${escapeHtml(place.message)}</span>
+      <span class="filter-row same-name-options">
+        ${place.choices.map((choice) => `<a href="${escapeHtml(choice.href)}">${escapeHtml(choice.label)}</a>`).join("")}
+      </span>
+    `;
   }
 
   function sourceText(policy) {
@@ -259,5 +312,7 @@
   }
 
   load();
+  showSameNamePlaceNotice();
   [600, 1400, 2600, 4200, 6500].forEach((delay) => setTimeout(load, delay));
+  [300, 1200, 3500].forEach((delay) => setTimeout(showSameNamePlaceNotice, delay));
 })();

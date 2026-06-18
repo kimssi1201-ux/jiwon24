@@ -192,17 +192,24 @@ function policyRegionText(policy) {
     .join(" ");
 }
 
+function isGyeonggiGwangjuPolicy(policy) {
+  return /경기도\s*광주시|경기도광주시/.test(policyRegionText(policy));
+}
+
+function isGwangjuMetroPolicy(policy) {
+  const source = policyRegionText(policy);
+  return /광주광역시|광주광역시교육청/.test(source) || ((policy?.tags || []).includes("광역시도") && /광주/.test(source));
+}
+
 function isRequestedRegionPolicy(policy, requestedRegion) {
   const region = normalizeRegion(requestedRegion);
   if (!region || region === "전체지역") return true;
   if (region === "전국") return String(policy?.region || "").includes("전국");
 
-  const source = policyRegionText(policy);
   if (region === "광주") {
-    if (/경기도\s*광주시|경기도광주시/.test(source)) return false;
-    return policy.region === "광주" || /광주광역시|광주광역시교육청/.test(source);
+    return isGwangjuMetroPolicy(policy) && !isGyeonggiGwangjuPolicy(policy);
   }
-  if (region === "경기" && /경기도\s*광주시|경기도광주시/.test(source)) return true;
+  if (region === "경기" && isGyeonggiGwangjuPolicy(policy)) return true;
   return policy.region === region;
 }
 
@@ -239,14 +246,14 @@ async function fetchPage(serviceKey, page, perPage, extraParams = {}) {
   throw lastError;
 }
 
-async function fetchFirstPage(serviceKey, perPage) {
+async function fetchFirstPage(serviceKey, perPage, extraParams = {}) {
   const candidates = [...new Set([perPage, 500, 300, 200, 100, 50].filter((item) => item <= perPage))];
   let lastError;
 
   for (const candidate of candidates) {
     try {
       return {
-        body: await fetchPage(serviceKey, 1, candidate),
+        body: await fetchPage(serviceKey, 1, candidate, extraParams),
         perPage: candidate,
       };
     } catch (error) {
@@ -257,8 +264,36 @@ async function fetchFirstPage(serviceKey, perPage) {
   throw lastError;
 }
 
-async function fetchPolicies(serviceKey, pages, perPage, maxItems, startPage = 1) {
-  const firstPage = await fetchFirstPage(serviceKey, perPage);
+function regionApiKeyword(region) {
+  const keywords = {
+    서울: "서울",
+    부산: "부산",
+    대구: "대구",
+    인천: "인천",
+    광주: "광주광역시",
+    대전: "대전",
+    울산: "울산",
+    세종: "세종",
+    경기: "경기",
+    강원: "강원",
+    충북: "충청북도",
+    충남: "충청남도",
+    전북: "전북",
+    전남: "전라남도",
+    경북: "경상북도",
+    경남: "경상남도",
+    제주: "제주",
+  };
+  return keywords[normalizeRegion(region)] || "";
+}
+
+function regionApiParams(region) {
+  const keyword = regionApiKeyword(region);
+  return keyword ? { "cond[소관기관명::LIKE]": keyword } : {};
+}
+
+async function fetchPolicies(serviceKey, pages, perPage, maxItems, startPage = 1, extraParams = {}) {
+  const firstPage = await fetchFirstPage(serviceKey, perPage, extraParams);
   const first = firstPage.body;
   const actualPerPage = firstPage.perPage;
   const totalCount = Number(first.totalCount || first.matchCount || 0);
@@ -271,7 +306,7 @@ async function fetchPolicies(serviceKey, pages, perPage, maxItems, startPage = 1
   for (let start = safeStartPage === 1 ? 2 : safeStartPage; start <= endPage; start += 2) {
     const batch = [];
     for (let page = start; page < start + 2 && page <= endPage; page += 1) {
-      batch.push(fetchPage(serviceKey, page, actualPerPage).then((body) => ({ body, page })).catch(() => ({ body: null, page })));
+      batch.push(fetchPage(serviceKey, page, actualPerPage, extraParams).then((body) => ({ body, page })).catch(() => ({ body: null, page })));
     }
     const bodies = await Promise.all(batch);
     bodies.forEach(({ body, page }) => {
@@ -385,10 +420,11 @@ export async function onRequestGet({ request, env }) {
 
     const payload = await fetchPolicies(
       serviceKey,
-      requestedRegion && requestedRegion !== "전체지역" ? 40 : pages,
+      requestedRegion && requestedRegion !== "전체지역" ? Math.min(pages, 12) : pages,
       perPage,
       requestedRegion && requestedRegion !== "전체지역" ? 12000 : maxItems,
       requestedRegion && requestedRegion !== "전체지역" ? 1 : startPage,
+      requestedRegion && requestedRegion !== "전체지역" ? regionApiParams(requestedRegion) : {},
     );
     if (requestedRegion && requestedRegion !== "전체지역") {
       payload.source.region = requestedRegion;

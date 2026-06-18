@@ -221,13 +221,13 @@
 
   const triggers = [];
 
-  function makeTrigger(className) {
-    const button = document.createElement("button");
+  function registerTrigger(button) {
+    if (!button || triggers.includes(button)) return button;
     button.type = "button";
-    button.className = `official-links-trigger ${className}`;
+    button.classList.add("official-links-trigger");
     button.setAttribute("aria-haspopup", "dialog");
     button.setAttribute("aria-expanded", "false");
-    button.textContent = "관공서 모음";
+    if (!button.textContent.trim()) button.textContent = "관공서 모음";
     button.addEventListener("click", () => {
       if (document.body.classList.contains("official-links-open")) closeMenu();
       else openMenu();
@@ -236,15 +236,24 @@
     return button;
   }
 
-  if (desktopNav && !desktopNav.querySelector(".official-links-trigger")) {
+  function makeTrigger(className) {
+    const button = document.createElement("button");
+    button.className = `official-links-trigger ${className}`;
+    button.textContent = "관공서 모음";
+    return registerTrigger(button);
+  }
+
+  document.querySelectorAll("[data-official-links-trigger], .official-links-trigger").forEach(registerTrigger);
+
+  if (desktopNav && !desktopNav.querySelector("[data-official-links-trigger], .official-links-trigger")) {
     desktopNav.append(makeTrigger("official-links-nav-button"));
   }
 
-  if (categoryTabs && !categoryTabs.querySelector(".official-links-trigger")) {
+  if (categoryTabs && !categoryTabs.querySelector("[data-official-links-trigger], .official-links-trigger")) {
     categoryTabs.append(makeTrigger("official-links-tab-button"));
   }
 
-  if (!desktopNav && !categoryTabs && header && !header.querySelector(".official-links-trigger")) {
+  if (!desktopNav && !categoryTabs && header && !header.querySelector("[data-official-links-trigger], .official-links-trigger")) {
     header.append(makeTrigger("official-links-header-button"));
   }
 

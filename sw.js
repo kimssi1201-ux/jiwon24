@@ -1,4 +1,4 @@
-const CACHE_NAME = "gov-support25-site-v120";
+const CACHE_NAME = "gov-support25-site-v121";
 const ASSETS = [
   "./",
   "./styles.css?v=8",
@@ -24,6 +24,7 @@ const ASSETS = [
   "./policy-detail-actions.js?v=4",
   "./policy-detail-actions.js?v=6",
   "./app-shell.js?v=1",
+  "./official-links.js?v=1",
   "./policy-shell.js?v=1",
   "./deadline-badge-fix.js?v=1",
   "./deadline-badge-fix.js?v=2",
@@ -90,6 +91,7 @@ self.addEventListener("fetch", (event) => {
     url.pathname.endsWith("/site.js") ||
     url.pathname.endsWith("/site-data.js") ||
     url.pathname.endsWith("/app-shell.js") ||
+    url.pathname.endsWith("/official-links.js") ||
     url.pathname.endsWith("/policy-shell.js") ||
     url.pathname.endsWith("/deadline-badge-fix.js") ||
     url.pathname.endsWith("/mobile-search-action.js") ||

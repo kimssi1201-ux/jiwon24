@@ -54,6 +54,26 @@
     `;
   }
 
+  function detailHighlight(label, value) {
+    return `
+      <div class="detail-highlight">
+        <span>${escapeHtml(label)}</span>
+        <strong>${escapeHtml(value || "공고 확인")}</strong>
+      </div>
+    `;
+  }
+
+  function detailShareActions(policy) {
+    const title = policy?.title || "정책 정보";
+    const text = policy?.summary || "지원금 올데이에서 정책 정보를 확인해 보세요.";
+    return `
+      <div class="detail-share" aria-label="정책 공유">
+        <button class="ghost-button share-button" type="button" data-share-policy data-share-title="${escapeHtml(title)}" data-share-text="${escapeHtml(text)}">공유하기</button>
+        <button class="ghost-button copy-button" type="button" data-copy-link>링크복사</button>
+      </div>
+    `;
+  }
+
   function renderPolicy(policy) {
     renderedPolicy = policy;
     detail.dataset.livePolicyId = policy.id;
@@ -77,6 +97,7 @@
           ${sourceAction}
           <a class="ghost-button" href="category.html">목록 보기</a>
         </div>
+        ${detailShareActions(policy)}
       </div>
 
       <aside class="benefit-summary">
@@ -84,6 +105,16 @@
         <strong>${escapeHtml(policy.maxBenefit || "기관 문의")}</strong>
         <p>내가 지원 받을 수 있는 최대 혜택이에요</p>
       </aside>
+
+      <section class="detail-section detail-overview">
+        <h2>한눈에 보기</h2>
+        <div class="detail-highlights">
+          ${detailHighlight("지원기관", policy.institution)}
+          ${detailHighlight("신청기간", policy.deadline)}
+          ${detailHighlight("지원대상", policy.target)}
+          ${detailHighlight("신청방법", policy.method)}
+        </div>
+      </section>
 
       <section class="detail-section">
         <h2>사업내용</h2>
@@ -107,7 +138,7 @@
 
       <section class="detail-section">
         <h2>접수 방법 및 상세 설명</h2>
-        <p>${escapeHtml(policy.summary)} 신청 전에는 관할 기관 공고와 실제 신청 페이지의 최신 조건을 함께 확인해야 합니다.</p>
+        <p>${escapeHtml(policy.summary)} 신청 전에는 관할 기관 공고와 실제 신청 페이지의 최신 조건, 제출 서류, 접수 가능 시간을 함께 확인해야 합니다.</p>
       </section>
     `;
 

@@ -102,9 +102,7 @@
     document.querySelectorAll(".category-tabs a").forEach((link) => link.classList.remove("active"));
     const activeHref = isDeadlineSoon
       ? "deadline=soon"
-      : filters.type === "대출"
-        ? "type=%EB%8C%80%EC%B6%9C"
-        : filters.region && filters.region !== "전체지역"
+      : filters.region && filters.region !== "전체지역"
           ? "region="
           : filters.target && filters.target !== "전체대상"
             ? "target="

@@ -100,8 +100,13 @@
   }
 
   function syncCategoryTabs() {
+    const filters = typeof readCategoryFilters === "function" ? readCategoryFilters() : {};
     document.querySelectorAll(".category-tabs a").forEach((link) => link.classList.remove("active"));
-    const activeHref = isDeadlineSoon ? "deadline=soon" : isNewsMode ? "mode=news" : "";
+    const activeHref = isDeadlineSoon
+      ? "deadline=soon"
+      : isNewsMode
+        ? "mode=news"
+        : "";
     const activeLink = activeHref
       ? [...document.querySelectorAll(".category-tabs a")].find((link) => link.href.includes(activeHref))
       : document.querySelector(".category-tabs a:first-child");
@@ -169,5 +174,8 @@
   bindSummaryRow();
   syncDeadlineState();
   if ((isDeadlineSoon || isNewsMode) && typeof renderCategory === "function") renderCategory();
-  [400, 1200, 3000, 6500].forEach((delay) => setTimeout(bindSummaryRow, delay));
+  [100, 400, 1200, 3000, 6500].forEach((delay) => setTimeout(() => {
+    bindSummaryRow();
+    syncDeadlineState();
+  }, delay));
 })();

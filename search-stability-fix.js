@@ -6,11 +6,16 @@
   const mode = urlParams.get("mode") || "";
   if (!query || mode === "official" || mode === "news") return;
 
-  window.GG24_SEARCH_STABILITY_FIX_VERSION = "1";
+  window.GG24_SEARCH_STABILITY_FIX_VERSION = "2";
 
   let stableSearchDone = false;
   let stableSearchStarted = false;
-  const cacheKey = `GG24_SEARCH_CACHE::${location.pathname}::${urlParams.toString()}`;
+  const cacheParams = new URLSearchParams();
+  ["q", "type", "region", "age", "target", "deadline", "mode"].forEach((key) => {
+    const value = urlParams.get(key);
+    if (value) cacheParams.set(key, value);
+  });
+  const cacheKey = `GG24_SEARCH_CACHE::${location.pathname}::${cacheParams.toString()}`;
   const regionNames = ["서울", "경기", "인천", "부산", "대구", "광주", "대전", "울산", "세종", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주"];
   const regionAliases = {
     서울특별시: "서울",
@@ -121,17 +126,21 @@
     }
   }
 
-  async function fetchJsonWithRetry(url, attempts = 3) {
+  async function fetchJsonWithRetry(url, attempts = 4, timeoutMs = 6500) {
     let lastError;
     for (let attempt = 0; attempt < attempts; attempt += 1) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
       try {
-        const response = await fetch(url, { headers: { Accept: "application/json" }, cache: "no-store" });
+        const response = await fetch(url, { headers: { Accept: "application/json" }, cache: "no-store", signal: controller.signal });
+        clearTimeout(timer);
         if (response.ok) return await response.json();
         lastError = new Error(`HTTP ${response.status}`);
       } catch (error) {
+        clearTimeout(timer);
         lastError = error;
       }
-      await new Promise((resolve) => setTimeout(resolve, 450 * (attempt + 1)));
+      await new Promise((resolve) => setTimeout(resolve, 350 * (attempt + 1)));
     }
     throw lastError;
   }
@@ -148,31 +157,43 @@
     return [...new Set(urls)];
   }
 
+  function finishSearch() {
+    stableSearchDone = true;
+    window.GG24_CATEGORY_FULL_LOAD_DONE = true;
+    if (typeof renderCategory === "function") renderCategory();
+    saveCache();
+  }
+
   async function stabilizeSearch() {
     if (stableSearchStarted) return;
     stableSearchStarted = true;
     window.GG24_CATEGORY_FULL_LOAD_DONE = false;
     showSearchLoading();
-    restoreCache();
 
-    const urls = searchUrls();
-    for (let index = 0; index < urls.length; index += 2) {
-      const batch = urls.slice(index, index + 2).map((url) => fetchJsonWithRetry(url).catch(() => null));
-      const payloads = await Promise.all(batch);
-      payloads.forEach((payload) => {
-        if (Array.isArray(payload?.policies) && payload.policies.length) {
-          policies = mergePolicies(payload.policies, Array.isArray(policies) ? policies : []);
-        }
-      });
-
-      if (typeof renderCategory === "function") renderCategory();
-      if (typeof filteredPolicies === "function" && filteredPolicies().length) saveCache();
+    if (restoreCache() && typeof renderCategory === "function") {
+      renderCategory();
+      if (hasVisibleResults()) {
+        finishSearch();
+        return;
+      }
     }
 
-    stableSearchDone = true;
-    window.GG24_CATEGORY_FULL_LOAD_DONE = true;
-    if (typeof renderCategory === "function") renderCategory();
-    saveCache();
+    const urls = searchUrls();
+    for (const url of urls) {
+      const payload = await fetchJsonWithRetry(url).catch(() => null);
+      if (Array.isArray(payload?.policies) && payload.policies.length) {
+        policies = mergePolicies(payload.policies, Array.isArray(policies) ? policies : []);
+      }
+
+      if (typeof renderCategory === "function") renderCategory();
+      if (hasVisibleResults()) {
+        finishSearch();
+        return;
+      }
+      showSearchLoading();
+    }
+
+    finishSearch();
   }
 
   if (typeof renderCategory === "function" && !window.GG24_SEARCH_STABILITY_RENDER_PATCHED) {

@@ -1,7 +1,11 @@
 (() => {
   const detail = document.querySelector("#policyDetail");
   const requestedId = new URLSearchParams(location.search).get("id");
-  if (!detail || !requestedId) return;
+  if (!detail) return;
+  if (!requestedId) {
+    detail.innerHTML = `<div class="empty-card">목록에서 정책을 선택해 주세요.</div>`;
+    return;
+  }
 
   let renderedPolicy = null;
   const staticPolicies = Array.isArray(window.GG24_DATA?.policies) ? window.GG24_DATA.policies : [];

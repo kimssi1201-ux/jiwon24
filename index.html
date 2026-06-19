@@ -18,6 +18,16 @@
     <link rel="stylesheet" href="category-app-style.css?v=7" />
     <link rel="stylesheet" href="popular-filter-fix.css?v=4" />
     <title>정책 검색 - 지원금 올데이</title>
+    <script>
+      if (new URLSearchParams(location.search).get("mode") === "official") {
+        document.documentElement.classList.add("official-mode-boot");
+      }
+    </script>
+    <style>
+      html.official-mode-boot body[data-page="category"]:not(.category-official-mode) .site-main {
+        opacity: 0;
+      }
+    </style>
   </head>
   <body data-page="category">
     <div class="promo-bar"><span>공공데이터 기반 정책 정보를 한곳에서 확인하세요.</span><a href="category.html">정책 보기</a></div>
@@ -109,6 +119,6 @@
     <script src="popular-filter-fix.js?v=2"></script>
     <script src="deadline-badge-fix.js?v=2"></script>
     <script src="mobile-search-action.js?v=3"></script>
-    <script src="official-links.js?v=9"></script>
+    <script src="official-links.js?v=10"></script>
   </body>
 </html>

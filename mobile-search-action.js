@@ -150,43 +150,43 @@
 (() => {
   if (document.body.dataset.page !== "category") return;
   if (window.GG24_MOBILE_FILTER_UI_FIX_VERSION) return;
-  window.GG24_MOBILE_FILTER_UI_FIX_VERSION = "20260619-2";
+  window.GG24_MOBILE_FILTER_UI_FIX_VERSION = "20260619-3";
 
   function compact(value) {
     return String(value || "").trim().replace(/[·\s_-]/g, "");
   }
 
   const ageAliases = {
-    전체연령: "전체연령",
-    영유아출산: "영유아·출산",
-    영유아: "영유아·출산",
-    출산: "영유아·출산",
-    아동청소년: "아동·청소년",
-    아동: "아동·청소년",
-    청소년: "아동·청소년",
-    청년: "청년",
-    중장년: "중장년·어르신",
-    어르신: "중장년·어르신",
-    노인: "중장년·어르신",
-    중장년어르신: "중장년·어르신",
+    "전체연령": "전체연령",
+    "영유아출산": "영유아·출산",
+    "영유아": "영유아·출산",
+    "출산": "영유아·출산",
+    "아동청소년": "아동·청소년",
+    "아동": "아동·청소년",
+    "청소년": "아동·청소년",
+    "청년": "청년",
+    "중장년": "중장년·어르신",
+    "어르신": "중장년·어르신",
+    "노인": "중장년·어르신",
+    "중장년어르신": "중장년·어르신",
   };
 
   const targetAliases = {
-    전체대상: "전체대상",
-    국가유공자보훈: "국가유공자·보훈",
-    국가유공자: "국가유공자·보훈",
-    보훈: "국가유공자·보훈",
-    장애인: "장애인",
-    소상공인: "소상공인",
-    농어업인: "농어업인",
-    농업인: "농어업인",
-    어업인: "농어업인",
-    저소득층: "저소득층",
-    저소득: "저소득층",
-    신혼부부: "신혼부부",
-    외국인다문화: "외국인·다문화",
-    외국인: "외국인·다문화",
-    다문화: "외국인·다문화",
+    "전체대상": "전체대상",
+    "국가유공자보훈": "국가유공자·보훈",
+    "국가유공자": "국가유공자·보훈",
+    "보훈": "국가유공자·보훈",
+    "장애인": "장애인",
+    "소상공인": "소상공인",
+    "농어업인": "농어업인",
+    "농업인": "농어업인",
+    "어업인": "농어업인",
+    "저소득층": "저소득층",
+    "저소득": "저소득층",
+    "신혼부부": "신혼부부",
+    "외국인다문화": "외국인·다문화",
+    "외국인": "외국인·다문화",
+    "다문화": "외국인·다문화",
   };
 
   function ageFrom(value) {
@@ -201,6 +201,9 @@
     const next = { ...filters };
     const regionAsAge = ageFrom(next.region);
     const regionAsTarget = targetFrom(next.region);
+    const targetAsAge = ageFrom(next.target);
+    const ageAsTarget = targetFrom(next.age);
+
     if (regionAsAge) {
       next.region = "전체지역";
       if (!next.age || next.age === "전체연령") next.age = regionAsAge;
@@ -208,6 +211,17 @@
       next.region = "전체지역";
       if (!next.target || next.target === "전체대상") next.target = regionAsTarget;
     }
+
+    if (targetAsAge) {
+      next.age = targetAsAge;
+      next.target = "전체대상";
+    }
+
+    if (ageAsTarget) {
+      next.target = ageAsTarget;
+      next.age = "전체연령";
+    }
+
     return next;
   }
 
@@ -265,7 +279,18 @@
     }
   }
 
-  document.addEventListener("click", () => window.setTimeout(fixFilterUi, 0), true);
+  let uiFixScheduled = false;
+  function scheduleFilterUiFix() {
+    if (uiFixScheduled) return;
+    uiFixScheduled = true;
+    window.requestAnimationFrame(() => {
+      uiFixScheduled = false;
+      fixFilterUi();
+    });
+  }
+
+  fixFilterUi();
+  new MutationObserver(scheduleFilterUiFix).observe(document.body, { childList: true, subtree: true });
   [0, 250, 700, 1500, 3000].forEach((delay) => window.setTimeout(fixFilterUi, delay));
 
   if (typeof renderCategory === "function") {

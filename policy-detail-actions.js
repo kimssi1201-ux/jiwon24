@@ -3,8 +3,8 @@
 
   const toast = document.querySelector("#toast");
   const KAKAO_SDK_SRC = "https://t1.kakaocdn.net/kakao_js_sdk/2.7.6/kakao.min.js";
-  const KAKAO_SHARE_IMAGE_URL =
-    "https://developers.kakao.com/assets/img/about/logos/kakaotalksharing/kakaotalk_sharing_btn_medium.png";
+  const KAKAO_BUTTON_IMAGE_URL = "assets/kakao-talk-share.png?v=1";
+  const KAKAO_SHARE_IMAGE_URL = "https://jiwon24.pages.dev/assets/app-icon-512.png?v=1";
   const SITE_KAKAO_JS_KEY = "";
   let kakaoSdkPromise = null;
 
@@ -37,13 +37,13 @@
     style.id = "policy-detail-enhance-style";
     style.textContent = `
       body[data-page="policy"] .detail-card { font-size: 17px; }
-      body[data-page="policy"] .detail-head h1 { font-size: clamp(32px, 8.4vw, 46px); line-height: 1.15; }
-      body[data-page="policy"] .detail-head p { font-size: 18px; line-height: 1.72; font-weight: 850; }
+      body[data-page="policy"] .detail-head h1 { font-size: clamp(30px, 7.4vw, 42px); line-height: 1.16; }
+      body[data-page="policy"] .detail-head p { color: #303946; font-size: 18px; line-height: 1.72; font-weight: 850; }
       body[data-page="policy"] .detail-actions .primary-button,
       body[data-page="policy"] .detail-actions .ghost-button,
-      body[data-page="policy"] .detail-share .ghost-button { min-height: 50px; font-size: 16px; font-weight: 900; }
-      body[data-page="policy"] .detail-share .share-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-color: #fee500; background: #fee500; color: #111827; }
-      body[data-page="policy"] .detail-share .share-kakao-icon { width: 24px; height: 24px; border-radius: 7px; flex: 0 0 auto; }
+      body[data-page="policy"] .detail-share .ghost-button { min-height: 52px; border-radius: 14px; font-size: 16px; font-weight: 900; }
+      body[data-page="policy"] .detail-share .share-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-color: #fee500; background: #fee500; color: #111827; box-shadow: 0 10px 20px rgba(250, 204, 21, 0.18); }
+      body[data-page="policy"] .detail-share .share-kakao-icon { width: 24px; height: 24px; border-radius: 7px; object-fit: contain; flex: 0 0 auto; }
       body[data-page="policy"] .detail-share .share-button::before { content: none; display: none; }
       body[data-page="policy"] .detail-section h2 { font-size: 23px; }
       body[data-page="policy"] .detail-section p { font-size: 17px; line-height: 1.85; }
@@ -54,7 +54,7 @@
       body[data-page="policy"] .detail-guide { border: 1px solid #dbeafe; border-radius: 16px; background: #f8fbff; padding: 18px; }
       body[data-page="policy"] .detail-lead { margin: 0; color: #111827; font-size: 18px; font-weight: 850; line-height: 1.78; }
       body[data-page="policy"] .detail-list { display: grid; gap: 10px; margin: 14px 0 0; padding: 0; list-style: none; }
-      body[data-page="policy"] .detail-list li { display: grid; gap: 5px; border: 1px solid #e5e7eb; border-radius: 14px; background: #fff; padding: 14px; }
+      body[data-page="policy"] .detail-list li { display: grid; gap: 5px; border: 1px solid #e5e7eb; border-radius: 14px; background: #fff; padding: 15px; }
       body[data-page="policy"] .detail-list strong { color: #1d4ed8; font-size: 14px; font-weight: 950; }
       body[data-page="policy"] .detail-list span { color: #111827; font-size: 17px; font-weight: 800; line-height: 1.62; word-break: keep-all; overflow-wrap: anywhere; }
     `;
@@ -173,7 +173,7 @@
   function ensureShareButtons() {
     const head = document.querySelector(".detail-head");
     if (!head) return;
-    const kakaoButtonMarkup = `<img class="share-kakao-icon" src="${KAKAO_SHARE_IMAGE_URL}" alt="" width="24" height="24" loading="lazy" decoding="async" />카카오톡 공유`;
+    const kakaoButtonMarkup = `<img class="share-kakao-icon" src="${KAKAO_BUTTON_IMAGE_URL}" alt="" width="24" height="24" loading="lazy" decoding="async" />카카오톡 공유`;
 
     head.querySelectorAll("[data-share-policy]").forEach((button) => {
       if (!button.querySelector(".share-kakao-icon")) {

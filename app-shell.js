@@ -1,8 +1,38 @@
 (() => {
+  const params = new URLSearchParams(location.search);
+  const appVersion = params.get("appv");
+  const appCacheKey = "GG24_APP_CACHE_VERSION";
+  const shouldResetAppCache = params.get("source") === "pwa" && appVersion;
+
+  async function resetAppCacheOnce() {
+    if (!shouldResetAppCache || localStorage.getItem(appCacheKey) === appVersion) return;
+    localStorage.setItem(appCacheKey, appVersion);
+
+    try {
+      if ("caches" in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.filter((key) => key.startsWith("gov-support25-site-")).map((key) => caches.delete(key)));
+      }
+
+      if ("serviceWorker" in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map((registration) => registration.unregister()));
+      }
+    } catch {
+      return;
+    }
+
+    const next = new URL(location.href);
+    next.searchParams.set("fresh", appVersion);
+    location.replace(next.href);
+  }
+
+  resetAppCacheOnce();
+
   const standalone =
     window.matchMedia?.("(display-mode: standalone)")?.matches ||
     window.navigator?.standalone === true ||
-    new URLSearchParams(location.search).get("source") === "pwa";
+    params.get("source") === "pwa";
   const isIos = /iphone|ipad|ipod/i.test(window.navigator?.userAgent || "");
   const bar = document.querySelector(".promo-bar");
   let installPrompt = null;

@@ -10,7 +10,7 @@
     { name: "국가보훈부", desc: "국가유공자와 보훈가족 지원 정보를 확인할 수 있습니다.", phone: "1577-0606", url: "https://www.mpva.go.kr/" },
   ];
 
-  window.GG24_OFFICIAL_LINKS_PAGE_VERSION = "20260619-3";
+  window.GG24_OFFICIAL_LINKS_PAGE_VERSION = "20260619-4";
 
   const params = new URLSearchParams(location.search);
   const isCategoryPage = document.body.dataset.page === "category";
@@ -173,32 +173,47 @@
     const notice = document.querySelector("#resultNotice");
     const list = document.querySelector("#policyList");
     const cardHtml = links.map(officialCard).join("");
+    let isPainting = false;
 
-    const paint = () => {
-      document.body.classList.add("category-official-mode");
-      setActiveTabs();
-      if (title) title.textContent = "관공서 모음";
-      if (count) count.textContent = `${links.length.toLocaleString("ko-KR")}곳`;
-      if (notice) notice.textContent = "자주 찾는 복지·고용·세금·금융 관련 관공서 공식 사이트와 대표번호입니다.";
-      if (list && (!list.querySelector(".official-link-card-inline") || list.querySelectorAll(".official-link-card-inline").length !== links.length)) {
-        list.innerHTML = cardHtml;
-      }
+    const needsPaint = () => {
+      const officialCards = list ? list.querySelectorAll(".official-link-card-inline").length : links.length;
+      return (
+        !document.body.classList.contains("category-official-mode") ||
+        (title && title.textContent.trim() !== "관공서 모음") ||
+        (count && count.textContent.trim() !== `${links.length.toLocaleString("ko-KR")}곳`) ||
+        (notice && !notice.textContent.includes("대표번호")) ||
+        (list && officialCards !== links.length)
+      );
     };
 
-    paint();
-    [80, 250, 700, 1500, 3000, 6000, 10000, 15000].forEach((delay) => setTimeout(paint, delay));
+    const paint = (force = false) => {
+      if (isPainting || (!force && !needsPaint())) return;
+      isPainting = true;
+      document.body.classList.add("category-official-mode");
+      setActiveTabs();
+      if (title && title.textContent.trim() !== "관공서 모음") title.textContent = "관공서 모음";
+      if (count && count.textContent.trim() !== `${links.length.toLocaleString("ko-KR")}곳`) {
+        count.textContent = `${links.length.toLocaleString("ko-KR")}곳`;
+      }
+      if (notice && !notice.textContent.includes("대표번호")) {
+        notice.textContent = "자주 찾는 복지·고용·세금·금융 관련 관공서 공식 사이트와 대표번호입니다.";
+      }
+      if (list && (force || list.querySelectorAll(".official-link-card-inline").length !== links.length)) {
+        list.innerHTML = cardHtml;
+      }
+      isPainting = false;
+    };
 
-    let guardCount = 0;
-    const guard = setInterval(() => {
-      guardCount += 1;
-      paint();
-      if (guardCount > 30) clearInterval(guard);
-    }, 1000);
+    paint(true);
+    [120, 450, 1200, 3000].forEach((delay) => setTimeout(() => paint(false), delay));
 
     if (list) {
-      new MutationObserver(() => {
-        if (!list.querySelector(".official-link-card-inline")) paint();
-      }).observe(list, { childList: true, subtree: false });
+      const observer = new MutationObserver(() => {
+        if (isPainting) return;
+        if (list.querySelectorAll(".official-link-card-inline").length !== links.length) paint(true);
+      });
+      observer.observe(list, { childList: true, subtree: false });
+      setTimeout(() => observer.disconnect(), 10000);
     }
   }
 

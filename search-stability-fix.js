@@ -6,7 +6,7 @@
   const mode = urlParams.get("mode") || "";
   if (!query || mode === "official" || mode === "news") return;
 
-  window.GG24_SEARCH_STABILITY_FIX_VERSION = "2";
+  window.GG24_SEARCH_STABILITY_FIX_VERSION = "3";
 
   let stableSearchDone = false;
   let stableSearchStarted = false;
@@ -64,10 +64,7 @@
 
   function currentFilters() {
     return typeof readCategoryFilters === "function" ? readCategoryFilters(new URLSearchParams(location.search)) : {
-      type: urlParams.get("type") || "전체",
       region: urlParams.get("region") || "전체지역",
-      age: urlParams.get("age") || "전체연령",
-      target: urlParams.get("target") || "전체대상",
       query,
     };
   }
@@ -84,7 +81,7 @@
     });
     regionNames.forEach((region) => {
       const token = compact(region);
-      if (compactQuery.startsWith(token) || compactQuery.includes(token)) found.add(region);
+      if (compactQuery.includes(token)) found.add(region);
     });
     return [...found];
   }
@@ -126,7 +123,7 @@
     }
   }
 
-  async function fetchJsonWithRetry(url, attempts = 4, timeoutMs = 6500) {
+  async function fetchJsonWithRetry(url, attempts = 3, timeoutMs = 5500) {
     let lastError;
     for (let attempt = 0; attempt < attempts; attempt += 1) {
       const controller = new AbortController();
@@ -140,21 +137,17 @@
         clearTimeout(timer);
         lastError = error;
       }
-      await new Promise((resolve) => setTimeout(resolve, 350 * (attempt + 1)));
+      await new Promise((resolve) => setTimeout(resolve, 300 * (attempt + 1)));
     }
     throw lastError;
   }
 
-  function searchUrls() {
-    const urls = [];
-    detectedRegions().forEach((region) => {
-      urls.push(`/api/policies?region=${encodeURIComponent(region)}&pages=40&perPage=500&maxItems=2500&stable=${Date.now()}`);
-    });
-
-    [1, 6, 11, 16, 21, 26, 31, 36].forEach((startPage) => {
-      urls.push(`/api/policies?startPage=${startPage}&pages=5&perPage=500&maxItems=2500&stable=${Date.now()}`);
-    });
-    return [...new Set(urls)];
+  function applyPayload(payload) {
+    if (Array.isArray(payload?.policies) && payload.policies.length) {
+      policies = mergePolicies(payload.policies, Array.isArray(policies) ? policies : []);
+      return true;
+    }
+    return false;
   }
 
   function finishSearch() {
@@ -162,6 +155,17 @@
     window.GG24_CATEGORY_FULL_LOAD_DONE = true;
     if (typeof renderCategory === "function") renderCategory();
     saveCache();
+  }
+
+  function fallbackUrls() {
+    const urls = [];
+    detectedRegions().forEach((region) => {
+      urls.push(`/api/policies?region=${encodeURIComponent(region)}&pages=40&perPage=500&maxItems=2500&stable=${Date.now()}`);
+    });
+    [1, 6, 11, 16, 21, 26, 31, 36].forEach((startPage) => {
+      urls.push(`/api/policies?startPage=${startPage}&pages=5&perPage=500&maxItems=2500&stable=${Date.now()}`);
+    });
+    return [...new Set(urls)];
   }
 
   async function stabilizeSearch() {
@@ -178,13 +182,21 @@
       }
     }
 
-    const urls = searchUrls();
-    for (const url of urls) {
-      const payload = await fetchJsonWithRetry(url).catch(() => null);
-      if (Array.isArray(payload?.policies) && payload.policies.length) {
-        policies = mergePolicies(payload.policies, Array.isArray(policies) ? policies : []);
+    const regions = detectedRegions();
+    const quickParams = new URLSearchParams({ q: query, limit: "80", fast: String(Date.now()) });
+    if (regions[0]) quickParams.set("region", regions[0]);
+    const quickPayload = await fetchJsonWithRetry(`/api/search?${quickParams.toString()}`, 2, 4500).catch(() => null);
+    if (applyPayload(quickPayload)) {
+      if (typeof renderCategory === "function") renderCategory();
+      if (hasVisibleResults()) {
+        finishSearch();
+        return;
       }
+    }
 
+    for (const url of fallbackUrls()) {
+      const payload = await fetchJsonWithRetry(url, 2, 5000).catch(() => null);
+      applyPayload(payload);
       if (typeof renderCategory === "function") renderCategory();
       if (hasVisibleResults()) {
         finishSearch();

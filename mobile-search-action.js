@@ -150,11 +150,15 @@
 (() => {
   if (document.body.dataset.page !== "category") return;
   if (window.GG24_MOBILE_FILTER_UI_FIX_VERSION) return;
-  window.GG24_MOBILE_FILTER_UI_FIX_VERSION = "20260619-3";
+  window.GG24_MOBILE_FILTER_UI_FIX_VERSION = "20260619-4";
 
   function compact(value) {
     return String(value || "").trim().replace(/[·\s_-]/g, "");
   }
+
+  const typeValues = new Set(["지원금", "환급금", "대출"]);
+  const ageValues = new Set(["영유아·출산", "아동·청소년", "청년", "중장년·어르신"]);
+  const targetValues = new Set(["국가유공자·보훈", "장애인", "소상공인", "농어업인", "저소득층", "신혼부부", "외국인·다문화"]);
 
   const ageAliases = {
     "전체연령": "전체연령",
@@ -242,6 +246,34 @@
     window.categoryUrl = categoryUrl;
     window.GG24_MOBILE_FILTER_URL_PATCHED = true;
   }
+
+  function singleSelectHref(label) {
+    const current = typeof readCategoryFilters === "function" ? readCategoryFilters() : {};
+    const params = new URLSearchParams();
+    if (current.region && current.region !== "전체지역") params.set("region", current.region);
+    if (current.query) params.set("q", current.query);
+    const raw = new URLSearchParams(location.search);
+    if (raw.get("deadline")) params.set("deadline", raw.get("deadline"));
+    if (raw.get("mode")) params.set("mode", raw.get("mode"));
+
+    const text = String(label || "").trim();
+    if (typeValues.has(text)) params.set("type", text);
+    else if (ageValues.has(text)) params.set("age", text);
+    else if (targetValues.has(text)) params.set("target", text);
+    else if (text !== "연령·대상 전체" && text !== "지원대상 전체") return "";
+
+    const query = params.toString();
+    return query ? `category.html?${query}` : "category.html";
+  }
+
+  document.addEventListener("click", (event) => {
+    const link = event.target.closest(".filter-sheet-options a");
+    if (!link) return;
+    const title = link.closest(".filter-sheet")?.querySelector(".filter-sheet-head h2")?.textContent?.trim() || "";
+    if (!title.includes("지원대상") && !title.includes("연령")) return;
+    const href = singleSelectHref(link.textContent);
+    if (href) link.setAttribute("href", href);
+  }, true);
 
   function regionLabel(filters) {
     if (!filters.region || filters.region === "전체지역") return "지역기관 전체";

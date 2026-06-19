@@ -1,6 +1,7 @@
 (() => {
   const mergedAge = "중장년·어르신";
   const mergedAgeCompact = "중장년어르신";
+  window.GG24_AGE_MERGE_FIX_VERSION = "20260619-2";
 
   function compactAge(value) {
     return String(value || "").trim().replace(/[·\s_-]/g, "");
@@ -60,18 +61,18 @@
       typeof window.readCategoryFilters === "function"
         ? window.readCategoryFilters(new URLSearchParams(location.search)).age
         : "";
-    const ageLinks = [...document.querySelectorAll("[data-age-filter], a[href*='age=']")];
+    const ageLinks = [...document.querySelectorAll("#ageFilter [data-age-filter]")];
     ageLinks.forEach((link) => {
-      const raw = link.dataset.ageFilter || new URL(link.href, location.href).searchParams.get("age") || link.textContent;
+      const raw = link.dataset.ageFilter || link.textContent;
       if (!isMergedAgeValue(raw)) return;
       link.textContent = mergedAge;
       link.dataset.ageFilter = mergedAge;
       link.href = hrefWithMergedAge(link);
-      link.classList.toggle("active", activeAge === mergedAge && link.hasAttribute("data-age-filter"));
+      link.classList.toggle("active", activeAge === mergedAge);
     });
 
     const seenByParent = new WeakMap();
-    [...document.querySelectorAll("[data-age-filter], a[href*='age=']")].forEach((link) => {
+    [...document.querySelectorAll("#ageFilter [data-age-filter]")].forEach((link) => {
       if (link.textContent.trim() !== mergedAge) return;
       const parent = link.parentElement || document.body;
       if (seenByParent.get(parent)) link.remove();

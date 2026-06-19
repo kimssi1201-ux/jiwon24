@@ -1,4 +1,4 @@
-const CACHE_NAME = "gov-support25-site-v127";
+const CACHE_NAME = "gov-support25-site-v128";
 const ASSETS = [
   "./",
   "./styles.css?v=9",
@@ -21,6 +21,7 @@ const ASSETS = [
   "./policy-live-detail.js?v=8",
   "./policy-live-detail.js?v=9",
   "./policy-live-detail.js?v=10",
+  "./policy-live-detail.js?v=11",
   "./policy-detail-actions.js?v=1",
   "./policy-detail-actions.js?v=3",
   "./policy-detail-actions.js?v=4",

@@ -153,10 +153,29 @@ function detectRegion(query, explicitRegion) {
   return REGION_NAMES.find((region) => compactQuery.includes(compact(region))) || "";
 }
 
+function spacedQueryVariants(value) {
+  const raw = String(value || "").trim();
+  if (!raw || /\s/.test(raw)) return [];
+  const compacted = compact(raw);
+  const keywords = ["지원금", "환급금", "장려금", "대출", "융자", "지원", "수당", "카드", "바우처"];
+  const variants = new Set();
+  keywords.forEach((keyword) => {
+    const compactKeyword = compact(keyword);
+    if (!compacted.endsWith(compactKeyword) || compacted.length <= compactKeyword.length + 1) return;
+    const prefix = compacted.slice(0, -compactKeyword.length);
+    if (prefix.length >= 2) {
+      variants.add(`${prefix} ${keyword}`);
+      variants.add(prefix);
+    }
+  });
+  return [...variants];
+}
+
 function queryTerms(query, region) {
   const terms = new Set();
   const raw = String(query || "").trim();
   if (raw) terms.add(raw);
+  spacedQueryVariants(raw).forEach((term) => terms.add(term));
   let cleaned = raw;
   Object.keys(REGION_ALIASES).forEach((alias) => { cleaned = cleaned.replaceAll(alias, " "); });
   REGION_NAMES.forEach((name) => { cleaned = cleaned.replaceAll(name, " "); });
@@ -164,6 +183,7 @@ function queryTerms(query, region) {
   cleaned.split(/\s+/).map((token) => token.trim()).filter((token) => token.length >= 2).forEach((token) => terms.add(token));
   const compactCleaned = compact(cleaned);
   if (compactCleaned && compactCleaned.length >= 2) terms.add(compactCleaned);
+  spacedQueryVariants(cleaned).forEach((term) => terms.add(term));
   return [...terms].slice(0, 6);
 }
 

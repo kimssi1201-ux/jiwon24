@@ -10,7 +10,7 @@
     { name: "국가보훈부", desc: "국가유공자와 보훈가족 지원 정보를 확인할 수 있습니다.", phone: "1577-0606", url: "https://www.mpva.go.kr/" },
   ];
 
-  window.GG24_OFFICIAL_LINKS_PAGE_VERSION = "20260619-4";
+  window.GG24_OFFICIAL_LINKS_PAGE_VERSION = "20260619-5";
 
   const params = new URLSearchParams(location.search);
   const isCategoryPage = document.body.dataset.page === "category";
@@ -68,6 +68,13 @@
     });
   }
 
+  function officialTabNeedsActiveFix() {
+    if (!isOfficialMode) return false;
+    const officialLinks = [...document.querySelectorAll('.category-tabs a[href*="mode=official"], .desktop-nav a[href*="mode=official"]')];
+    const wrongActive = document.querySelector('.category-tabs a.active:not([href*="mode=official"]), .desktop-nav a.active:not([href*="mode=official"])');
+    return Boolean(wrongActive) || officialLinks.some((link) => !link.classList.contains("active"));
+  }
+
   function injectOfficialStyles() {
     if (document.querySelector("#officialLinksPageStyle")) return;
     const style = document.createElement("style");
@@ -76,6 +83,15 @@
       body.category-official-mode .category-hero,
       body.category-official-mode .filter-summary-row {
         display: none !important;
+      }
+
+      body.category-official-mode .desktop-nav a.active:not([href*="mode=official"]) {
+        color: inherit;
+      }
+
+      body.category-official-mode .desktop-nav a[href*="mode=official"] {
+        color: #2563eb;
+        font-weight: 900;
       }
 
       .official-link-card-inline .policy-highlight {
@@ -117,6 +133,25 @@
       @media (max-width: 759px) {
         body.category-official-mode .site-main {
           padding-top: 12px;
+        }
+
+        body.category-official-mode .category-tabs a.active:not([href*="mode=official"]) {
+          border-color: #d7e1ef;
+          background: #f7faff;
+          color: #253041;
+          box-shadow: inset 0 -1px 0 rgba(37, 99, 235, 0.05);
+        }
+
+        body.category-official-mode .category-tabs a[href*="mode=official"] {
+          border-color: #2563eb;
+          background: #2563eb;
+          color: #ffffff;
+          box-shadow: 0 7px 16px rgba(37, 99, 235, 0.24);
+        }
+
+        body.category-official-mode .category-tabs a.active:not([href*="mode=official"])::after,
+        body.category-official-mode .category-tabs a[href*="mode=official"]::after {
+          display: none;
         }
 
         body.category-official-mode .result-notice {
@@ -179,6 +214,7 @@
       const officialCards = list ? list.querySelectorAll(".official-link-card-inline").length : links.length;
       return (
         !document.body.classList.contains("category-official-mode") ||
+        officialTabNeedsActiveFix() ||
         (title && title.textContent.trim() !== "관공서 모음") ||
         (count && count.textContent.trim() !== `${links.length.toLocaleString("ko-KR")}곳`) ||
         (notice && !notice.textContent.includes("대표번호")) ||
@@ -205,16 +241,24 @@
     };
 
     paint(true);
-    [120, 450, 1200, 3000].forEach((delay) => setTimeout(() => paint(false), delay));
+    [120, 450, 1200, 3000, 6000, 10000].forEach((delay) => setTimeout(() => paint(false), delay));
 
     if (list) {
-      const observer = new MutationObserver(() => {
+      const listObserver = new MutationObserver(() => {
         if (isPainting) return;
         if (list.querySelectorAll(".official-link-card-inline").length !== links.length) paint(true);
       });
-      observer.observe(list, { childList: true, subtree: false });
-      setTimeout(() => observer.disconnect(), 10000);
+      listObserver.observe(list, { childList: true, subtree: false });
+      setTimeout(() => listObserver.disconnect(), 10000);
     }
+
+    document.querySelectorAll(".category-tabs, .desktop-nav").forEach((nav) => {
+      const tabObserver = new MutationObserver(() => {
+        if (!isPainting && officialTabNeedsActiveFix()) paint(false);
+      });
+      tabObserver.observe(nav, { attributes: true, subtree: true, attributeFilter: ["class"] });
+      setTimeout(() => tabObserver.disconnect(), 10000);
+    });
   }
 
   normalizeLegacyButtons();

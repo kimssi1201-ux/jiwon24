@@ -1,351 +1,168 @@
 (() => {
-  const header = document.querySelector(".header-inner");
-  const desktopNav = document.querySelector(".desktop-nav");
-  const categoryTabs = document.querySelector(".category-tabs");
-  if (!header && !desktopNav && !categoryTabs) return;
-
   const links = [
-    { name: "정부24·보조금24", desc: "민원, 정부혜택, 정책정보", url: "https://plus.gov.kr/" },
-    { name: "복지로", desc: "복지서비스, 복지멤버십, 온라인 신청", url: "https://www.bokjiro.go.kr/" },
-    { name: "고용24", desc: "취업지원, 실업급여, 국민취업지원제도", url: "https://www.work24.go.kr/" },
-    { name: "홈택스", desc: "근로·자녀장려금, 세금, 환급 조회", url: "https://www.hometax.go.kr/" },
-    { name: "국민건강보험", desc: "건강보험, 장기요양, 보험료 민원", url: "https://www.nhis.or.kr/" },
-    { name: "국민연금", desc: "연금 조회, 가입내역, 노후준비", url: "https://www.nps.or.kr/" },
-    { name: "서민금융진흥원", desc: "서민금융상품, 휴면예금, 금융지원", url: "https://www.kinfa.or.kr/" },
-    { name: "국가보훈부", desc: "국가유공자, 보훈가족 지원", url: "https://www.mpva.go.kr/" },
+    { name: "정부24·보조금24", desc: "민원, 정부혜택, 정책정보를 확인할 수 있는 대표 공공서비스입니다.", url: "https://plus.gov.kr/" },
+    { name: "복지로", desc: "복지서비스, 복지멤버십, 온라인 신청 정보를 제공합니다.", url: "https://www.bokjiro.go.kr/" },
+    { name: "고용24", desc: "취업지원, 실업급여, 국민취업지원제도 관련 정보를 확인할 수 있습니다.", url: "https://www.work24.go.kr/" },
+    { name: "홈택스", desc: "근로·자녀장려금, 세금 신고, 환급 조회를 이용할 수 있습니다.", url: "https://www.hometax.go.kr/" },
+    { name: "국민건강보험", desc: "건강보험, 장기요양, 보험료 민원 정보를 제공합니다.", url: "https://www.nhis.or.kr/" },
+    { name: "국민연금", desc: "연금 조회, 가입내역, 노후준비 정보를 확인할 수 있습니다.", url: "https://www.nps.or.kr/" },
+    { name: "서민금융진흥원", desc: "서민금융상품, 휴면예금, 금융지원 정보를 제공합니다.", url: "https://www.kinfa.or.kr/" },
+    { name: "국가보훈부", desc: "국가유공자와 보훈가족 지원 정보를 확인할 수 있습니다.", url: "https://www.mpva.go.kr/" },
   ];
 
-  const style = document.createElement("style");
-  style.textContent = `
-    .official-links-trigger {
-      font-family: inherit;
-      line-height: 1;
-      cursor: pointer;
-      appearance: none;
-      -webkit-appearance: none;
+  window.GG24_OFFICIAL_LINKS_PAGE_VERSION = "20260619-1";
+
+  const params = new URLSearchParams(location.search);
+  const isCategoryPage = document.body.dataset.page === "category";
+  const isOfficialMode = params.get("mode") === "official";
+  const officialHref = "category.html?mode=official";
+
+  function escapeText(value) {
+    if (typeof escapeHtml === "function") return escapeHtml(value);
+    return String(value || "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function safeUrl(value) {
+    try {
+      const url = new URL(value || "", location.href);
+      return /^https?:$/.test(url.protocol) ? url.href : "";
+    } catch {
+      return "";
     }
+  }
 
-    .desktop-nav .official-links-trigger {
-      display: inline-flex;
-      align-items: center;
-      min-height: 30px;
-      border: 0;
-      background: transparent;
-      color: inherit;
-      margin: 0;
-      padding: 0;
-      font-size: inherit;
-      font-weight: inherit;
-      white-space: nowrap;
-    }
-
-    .desktop-nav .official-links-trigger:hover,
-    .desktop-nav .official-links-trigger:focus-visible {
-      color: var(--teal-dark, #0f766e);
-    }
-
-    .category-tabs .official-links-trigger {
-      position: relative;
-      flex: 0 0 auto;
-      display: inline-flex;
-      align-items: flex-start;
-      justify-content: center;
-      min-height: 40px;
-      border: 0;
-      background: transparent;
-      color: #8d939d;
-      margin: 0;
-      padding: 0;
-      font-size: 16px;
-      font-weight: 950;
-      line-height: 1.15;
-      white-space: nowrap;
-    }
-
-    body.official-links-open .category-tabs .official-links-trigger {
-      color: #111827;
-    }
-
-    body.official-links-open .category-tabs .official-links-trigger::after {
-      content: "";
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: -1px;
-      height: 3px;
-      border-radius: 999px 999px 0 0;
-      background: #111827;
-    }
-
-    .official-links-backdrop {
-      position: fixed;
-      inset: 0;
-      z-index: 90;
-      display: none;
-      background: rgba(15, 23, 42, 0.42);
-      padding: 18px;
-    }
-
-    body.official-links-open .official-links-backdrop {
-      display: block;
-    }
-
-    .official-links-panel {
-      width: min(420px, calc(100vw - 32px));
-      max-height: min(620px, calc(100vh - 76px));
-      margin: 64px auto 0;
-      overflow: auto;
-      border: 1px solid rgba(226, 232, 240, 0.92);
-      border-radius: 14px;
-      background: #ffffff;
-      box-shadow: 0 28px 80px rgba(15, 23, 42, 0.24);
-    }
-
-    .official-links-head {
-      position: sticky;
-      top: 0;
-      z-index: 1;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      padding: 18px 18px 12px;
-      background: rgba(255, 255, 255, 0.96);
-      border-bottom: 1px solid #eef2f7;
-    }
-
-    .official-links-head h2 {
-      margin: 0;
-      color: #111827;
-      font-size: 20px;
-      line-height: 1.2;
-      font-weight: 950;
-    }
-
-    .official-links-close {
-      width: 36px;
-      height: 36px;
-      border: 1px solid #dbe3ec;
-      border-radius: 999px;
-      background: #ffffff;
-      color: #111827;
-      font-size: 22px;
-      line-height: 1;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .official-links-list {
-      display: grid;
-      gap: 8px;
-      padding: 12px 14px 14px;
-    }
-
-    .official-link-card {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 8px 12px;
-      align-items: center;
-      border: 1px solid #e3e9f2;
-      border-radius: 10px;
-      background: #ffffff;
-      padding: 14px;
-      text-decoration: none;
-    }
-
-    .official-link-card strong {
-      color: #111827;
-      font-size: 16px;
-      line-height: 1.25;
-      font-weight: 950;
-    }
-
-    .official-link-card small {
-      grid-column: 1 / -1;
-      color: #64748b;
-      font-size: 13px;
-      line-height: 1.35;
-      font-weight: 760;
-    }
-
-    .official-link-card::after {
-      content: "열기";
-      width: 42px;
-      min-height: 30px;
-      display: inline-grid;
-      place-items: center;
-      border-radius: 999px;
-      background: #eff6ff;
-      color: #2563eb;
-      font-size: 12px;
-      font-weight: 950;
-    }
-
-    .official-links-note {
-      margin: 0;
-      padding: 0 18px 18px;
-      color: #64748b;
-      font-size: 12px;
-      line-height: 1.4;
-      font-weight: 760;
-    }
-
-    @media (max-width: 759px) {
-      body[data-page="category"] .category-tabs {
-        align-items: flex-start;
-        justify-content: center;
-        gap: 18px;
-        overflow-x: hidden;
-        padding-right: 16px;
-        padding-left: 16px;
-      }
-
-      body[data-page="category"] .category-tabs a,
-      body[data-page="category"] .category-tabs .official-links-trigger {
-        display: inline-flex;
-        align-items: flex-start;
-        justify-content: center;
-        min-height: 40px;
-        font-size: 16px;
-        line-height: 1.15;
-      }
-
-      body[data-page="category"] .header-inner::after {
-        content: none;
-      }
-
-      .official-links-backdrop {
-        padding: 0;
-      }
-
-      .official-links-panel {
-        position: absolute;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        width: 100%;
-        max-height: min(82vh, 680px);
-        margin: 0;
-        border-radius: 18px 18px 0 0;
-        border-bottom: 0;
-        padding-bottom: env(safe-area-inset-bottom);
-      }
-
-      .official-links-head h2 {
-        font-size: 21px;
-      }
-
-      .official-link-card {
-        padding: 15px;
-      }
-
-      .official-link-card strong {
-        font-size: 17px;
-      }
-
-      .official-link-card small {
-        font-size: 14px;
-      }
-    }
-
-    @media (max-width: 370px) {
-      body[data-page="category"] .category-tabs {
-        gap: 12px;
-        padding-right: 12px;
-        padding-left: 12px;
-      }
-
-      body[data-page="category"] .category-tabs a,
-      body[data-page="category"] .category-tabs .official-links-trigger {
-        font-size: 15px;
-      }
-    }
-  `;
-  document.head.append(style);
-
-  const triggers = [];
-
-  function registerTrigger(button) {
-    if (!button || triggers.includes(button)) return button;
-    button.type = "button";
-    button.classList.add("official-links-trigger");
-    button.setAttribute("aria-haspopup", "dialog");
-    button.setAttribute("aria-expanded", "false");
-    if (!button.textContent.trim()) button.textContent = "관공서 모음";
-    button.addEventListener("click", () => {
-      if (document.body.classList.contains("official-links-open")) closeMenu();
-      else openMenu();
+  function normalizeLegacyButtons() {
+    document.querySelectorAll("button[data-official-links-trigger], button.official-links-trigger").forEach((button) => {
+      button.removeAttribute("aria-haspopup");
+      button.removeAttribute("aria-expanded");
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
+        location.href = officialHref;
+      });
     });
-    triggers.push(button);
-    return button;
   }
 
-  function makeTrigger(className) {
-    const button = document.createElement("button");
-    button.className = `official-links-trigger ${className}`;
-    button.textContent = "관공서 모음";
-    return registerTrigger(button);
+  function setActiveTabs() {
+    if (!isCategoryPage) return;
+    const isNewsMode = params.get("mode") === "news";
+    const isDeadlineMode = params.get("deadline") === "soon";
+    const isDefaultMode = !isNewsMode && !isDeadlineMode && !isOfficialMode;
+
+    document.querySelectorAll(".category-tabs a, .desktop-nav a").forEach((link) => {
+      const href = link.getAttribute("href") || "";
+      const active =
+        (isOfficialMode && href.includes("mode=official")) ||
+        (isNewsMode && href.includes("mode=news")) ||
+        (isDeadlineMode && href.includes("deadline=soon")) ||
+        (isDefaultMode && !href.includes("mode=") && !href.includes("deadline="));
+      link.classList.toggle("active", active);
+    });
   }
 
-  document.querySelectorAll("[data-official-links-trigger], .official-links-trigger").forEach(registerTrigger);
+  function injectOfficialStyles() {
+    if (document.querySelector("#officialLinksPageStyle")) return;
+    const style = document.createElement("style");
+    style.id = "officialLinksPageStyle";
+    style.textContent = `
+      body.category-official-mode .category-hero,
+      body.category-official-mode .filter-summary-row {
+        display: none !important;
+      }
 
-  if (desktopNav && !desktopNav.querySelector("[data-official-links-trigger], .official-links-trigger")) {
-    desktopNav.append(makeTrigger("official-links-nav-button"));
+      .official-link-card-inline .policy-highlight {
+        color: #475569;
+      }
+
+      .official-open-link {
+        width: fit-content;
+        min-height: 34px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        background: #eff6ff;
+        color: #2563eb;
+        padding: 7px 12px;
+        font-size: 13px;
+        font-weight: 900;
+      }
+
+      @media (max-width: 759px) {
+        body.category-official-mode .site-main {
+          padding-top: 12px;
+        }
+
+        body.category-official-mode .result-notice {
+          margin: 0 2px 2px;
+          color: #64748b;
+          font-size: 14px;
+          line-height: 1.45;
+          font-weight: 760;
+        }
+
+        body.category-official-mode .official-link-card-inline .policy-highlight {
+          color: #475569;
+          font-weight: 700;
+        }
+
+        body.category-official-mode .official-open-link {
+          min-height: 38px;
+          padding: 8px 14px;
+          font-size: 14px;
+        }
+      }
+    `;
+    document.head.append(style);
   }
 
-  if (categoryTabs && !categoryTabs.querySelector("[data-official-links-trigger], .official-links-trigger")) {
-    categoryTabs.append(makeTrigger("official-links-tab-button"));
+  function officialCard(link) {
+    const href = safeUrl(link.url);
+    return `
+      <article class="policy-card app-list-card official-link-card-inline">
+        <div class="policy-body">
+          <div class="meta-row">
+            <span class="badge agency">공식 사이트</span>
+          </div>
+          <h3><a href="${escapeText(href)}" target="_blank" rel="noopener noreferrer">${escapeText(link.name)}</a></h3>
+          <p class="policy-highlight">${escapeText(link.desc)}</p>
+          <a class="official-open-link" href="${escapeText(href)}" target="_blank" rel="noopener noreferrer">사이트 열기</a>
+        </div>
+      </article>
+    `;
   }
 
-  if (!desktopNav && !categoryTabs && header && !header.querySelector("[data-official-links-trigger], .official-links-trigger")) {
-    header.append(makeTrigger("official-links-header-button"));
+  function renderOfficialPage() {
+    if (!isCategoryPage || !isOfficialMode) return;
+
+    injectOfficialStyles();
+    document.body.classList.add("category-official-mode");
+
+    const title = document.querySelector("#categoryTitle");
+    const count = document.querySelector("#categoryCount");
+    const notice = document.querySelector("#resultNotice");
+    const list = document.querySelector("#policyList");
+
+    if (title) title.textContent = "관공서 모음";
+    if (count) count.textContent = `${links.length.toLocaleString("ko-KR")}곳`;
+    if (notice) notice.textContent = "자주 찾는 복지·고용·세금·금융 관련 관공서 공식 사이트입니다.";
+    if (list) list.innerHTML = links.map(officialCard).join("");
+
+    const enforce = () => {
+      document.body.classList.add("category-official-mode");
+      setActiveTabs();
+      if (list && !list.querySelector(".official-link-card-inline")) list.innerHTML = links.map(officialCard).join("");
+      if (notice && !notice.textContent.trim()) notice.textContent = "자주 찾는 복지·고용·세금·금융 관련 관공서 공식 사이트입니다.";
+    };
+
+    [80, 250, 700, 1500, 3000, 6000].forEach((delay) => setTimeout(enforce, delay));
   }
 
-  const backdrop = document.createElement("div");
-  backdrop.className = "official-links-backdrop";
-  backdrop.innerHTML = `
-    <section class="official-links-panel" role="dialog" aria-modal="true" aria-labelledby="officialLinksTitle">
-      <div class="official-links-head">
-        <h2 id="officialLinksTitle">관공서 모음</h2>
-        <button type="button" class="official-links-close" aria-label="닫기">×</button>
-      </div>
-      <div class="official-links-list">
-        ${links
-          .map(
-            (link) => `
-              <a class="official-link-card" href="${link.url}" target="_blank" rel="noopener noreferrer">
-                <strong>${link.name}</strong>
-                <small>${link.desc}</small>
-              </a>
-            `,
-          )
-          .join("")}
-      </div>
-      <p class="official-links-note">각 항목은 해당 기관의 공식 사이트로 이동합니다.</p>
-    </section>
-  `;
-  document.body.append(backdrop);
-
-  function setExpanded(value) {
-    triggers.forEach((trigger) => trigger.setAttribute("aria-expanded", String(value)));
-  }
-
-  function closeMenu() {
-    document.body.classList.remove("official-links-open");
-    setExpanded(false);
-  }
-
-  function openMenu() {
-    document.body.classList.add("official-links-open");
-    setExpanded(true);
-    backdrop.querySelector(".official-links-close")?.focus();
-  }
-
-  backdrop.addEventListener("click", (event) => {
-    if (event.target === backdrop || event.target.closest(".official-links-close")) closeMenu();
-  });
-
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") closeMenu();
-  });
+  normalizeLegacyButtons();
+  setActiveTabs();
+  renderOfficialPage();
 })();

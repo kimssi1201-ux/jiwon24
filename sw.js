@@ -1,4 +1,4 @@
-const CACHE_NAME = "gov-support25-site-v134";
+const CACHE_NAME = "gov-support25-site-v135";
 const ASSETS = [
   "./",
   "./styles.css?v=10",
@@ -11,6 +11,7 @@ const ASSETS = [
   "./popular-filter-fix.css?v=1",
   "./popular-filter-fix.css?v=2",
   "./popular-filter-fix.css?v=3",
+  "./popular-filter-fix.css?v=4",
   "./home-focus.css?v=2",
   "./deadline.js?v=2",
   "./deadline.js?v=3",
@@ -31,6 +32,7 @@ const ASSETS = [
   "./app-shell.js?v=1",
   "./app-shell.js?v=2",
   "./official-links.js?v=6",
+  "./official-links.js?v=7",
   "./policy-shell.js?v=1",
   "./deadline-badge-fix.js?v=1",
   "./deadline-badge-fix.js?v=2",

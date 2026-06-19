@@ -160,3 +160,130 @@
     window.setTimeout(openMobileSearch, 250);
   }
 })();
+
+(() => {
+  if (document.body.dataset.page !== "category") return;
+  if (window.GG24_MOBILE_FILTER_UI_FIX_VERSION) return;
+  window.GG24_MOBILE_FILTER_UI_FIX_VERSION = "20260619-1";
+
+  function compact(value) {
+    return String(value || "").trim().replace(/[·\s_-]/g, "");
+  }
+
+  const ageAliases = {
+    전체연령: "전체연령",
+    영유아출산: "영유아·출산",
+    영유아: "영유아·출산",
+    출산: "영유아·출산",
+    아동청소년: "아동·청소년",
+    아동: "아동·청소년",
+    청소년: "아동·청소년",
+    청년: "청년",
+    중장년: "중장년·어르신",
+    어르신: "중장년·어르신",
+    노인: "중장년·어르신",
+    중장년어르신: "중장년·어르신",
+  };
+
+  const targetAliases = {
+    전체대상: "전체대상",
+    국가유공자보훈: "국가유공자·보훈",
+    국가유공자: "국가유공자·보훈",
+    보훈: "국가유공자·보훈",
+    장애인: "장애인",
+    소상공인: "소상공인",
+    농어업인: "농어업인",
+    농업인: "농어업인",
+    어업인: "농어업인",
+    저소득층: "저소득층",
+    저소득: "저소득층",
+    신혼부부: "신혼부부",
+    외국인다문화: "외국인·다문화",
+    외국인: "외국인·다문화",
+    다문화: "외국인·다문화",
+  };
+
+  function ageFrom(value) {
+    return ageAliases[compact(value)] || "";
+  }
+
+  function targetFrom(value) {
+    return targetAliases[compact(value)] || "";
+  }
+
+  function cleanFilters(filters) {
+    const next = { ...filters };
+    const regionAsAge = ageFrom(next.region);
+    const regionAsTarget = targetFrom(next.region);
+    if (regionAsAge) {
+      next.region = "전체지역";
+      if (!next.age || next.age === "전체연령") next.age = regionAsAge;
+    } else if (regionAsTarget) {
+      next.region = "전체지역";
+      if (!next.target || next.target === "전체대상") next.target = regionAsTarget;
+    }
+    return next;
+  }
+
+  if (typeof readCategoryFilters === "function" && !window.GG24_MOBILE_FILTER_READ_PATCHED) {
+    const previousReadCategoryFilters = readCategoryFilters;
+    readCategoryFilters = function readCategoryFiltersWithCleanAudience(sourceParams = params) {
+      return cleanFilters(previousReadCategoryFilters(sourceParams));
+    };
+    window.readCategoryFilters = readCategoryFilters;
+    window.GG24_MOBILE_FILTER_READ_PATCHED = true;
+  }
+
+  if (typeof categoryUrl === "function" && !window.GG24_MOBILE_FILTER_URL_PATCHED) {
+    const previousCategoryUrl = categoryUrl;
+    categoryUrl = function categoryUrlWithCleanAudience(filters = {}) {
+      return previousCategoryUrl(cleanFilters(filters));
+    };
+    window.categoryUrl = categoryUrl;
+    window.GG24_MOBILE_FILTER_URL_PATCHED = true;
+  }
+
+  function regionLabel(filters) {
+    if (!filters.region || filters.region === "전체지역") return "지역기관 전체";
+    return typeof displayFilterLabel === "function" ? displayFilterLabel(filters.region) : filters.region;
+  }
+
+  function audienceLabel(filters) {
+    const parts = [];
+    if (filters.age && filters.age !== "전체연령") parts.push(filters.age);
+    if (filters.target && filters.target !== "전체대상") parts.push(filters.target);
+    return parts.length ? parts.join(" · ") : "연령·대상 전체";
+  }
+
+  function fixFilterUi() {
+    const filters = typeof readCategoryFilters === "function" ? readCategoryFilters() : {};
+    const row = document.querySelector(".filter-summary-row");
+    if (row) {
+      const regionButton = row.querySelector('[data-filter-sheet="regionFilter"]');
+      const targetButton = row.querySelector('[data-filter-sheet="targetFilter"]');
+      if (regionButton) {
+        regionButton.innerHTML = `<span class="summary-icon map"></span>${regionLabel(filters)}`;
+      }
+      if (targetButton) {
+        targetButton.innerHTML = `<span class="summary-icon user"></span>${audienceLabel(filters)}`;
+      }
+    }
+
+    const title = document.querySelector(".filter-sheet-head h2");
+    if (title && title.textContent.trim() === "지원대상 유형 선택") {
+      title.textContent = "연령·지원대상 선택";
+    }
+    const firstChoice = document.querySelector(".filter-sheet-options a");
+    if (firstChoice && firstChoice.textContent.trim() === "지원대상 전체") {
+      firstChoice.textContent = "연령·대상 전체";
+    }
+  }
+
+  fixFilterUi();
+  new MutationObserver(fixFilterUi).observe(document.body, { childList: true, subtree: true });
+  [0, 250, 700, 1500].forEach((delay) => window.setTimeout(fixFilterUi, delay));
+
+  if (typeof renderCategory === "function") {
+    [0, 400].forEach((delay) => window.setTimeout(renderCategory, delay));
+  }
+})();

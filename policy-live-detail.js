@@ -26,17 +26,54 @@
     }
   }
 
+  function normalizeText(value, fallback = "공고 확인") {
+    const text = String(value ?? "")
+      .replace(/<[^>]*>/g, " ")
+      .replace(/[○●❍▪▫■□◆◇▶]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (!text || text === "undefined" || text === "null") return fallback;
+    return text;
+  }
+
+  function compactText(value, maxLength = 360, fallback = "공고 확인") {
+    const text = normalizeText(value, fallback);
+    if (text.length <= maxLength) return text;
+    return `${text.slice(0, maxLength - 1).trim()}…`;
+  }
+
+  function normalizeDeadline(value) {
+    const text = normalizeText(value, "기관 문의");
+    if (/상시|연중|수시/.test(text) && /정기|기간|별도|공고/.test(text)) return "상시 또는 정기 신청";
+    return text;
+  }
+
+  function isAlwaysDeadline(value) {
+    return /상시|연중|수시/.test(normalizeText(value, ""));
+  }
+
+  function uniqueItems(items) {
+    return [...new Set(items.map((item) => normalizeText(item, "")).filter(Boolean))];
+  }
+
   function daysLeft(deadline) {
-    if (!deadline) return "기관 문의";
-    if (deadline === "상시" || deadline.includes("상시") || deadline.includes("예산") || deadline.includes("문의")) {
-      return deadline;
+    const text = normalizeDeadline(deadline);
+    if (!text) return "기관 문의";
+    if (text === "상시" || text.includes("상시") || text.includes("예산") || text.includes("문의")) {
+      return text;
     }
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(deadline)) return deadline;
-    const due = new Date(`${deadline}T23:59:59+09:00`);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(text)) return text;
+    const due = new Date(`${text}T23:59:59+09:00`);
     const diff = Math.ceil((due - new Date()) / 86400000);
     if (diff < 0) return "마감";
     if (diff === 0) return "오늘 마감";
     return `${diff}일 남음`;
+  }
+
+  function deadlineBadge(deadline) {
+    const status = daysLeft(deadline);
+    if (!deadline || status === normalizeDeadline(deadline) || isAlwaysDeadline(status)) return "";
+    return `<span class="badge deadline">${escapeHtml(status)}</span>`;
   }
 
   function badgeClass(type) {
@@ -46,21 +83,32 @@
   }
 
   function detailRow(label, value) {
+    const text = normalizeText(value, "");
+    if (!text) return "";
+    const valueClass = label.includes("신청") && isAlwaysDeadline(text) ? ` class="deadline-always"` : "";
     return `
       <div class="detail-row">
         <dt>${escapeHtml(label)}</dt>
-        <dd>${escapeHtml(value || "공고 확인")}</dd>
+        <dd${valueClass}>${escapeHtml(text)}</dd>
       </div>
     `;
   }
 
   function detailHighlight(label, value) {
+    const text = normalizeText(value, "");
+    if (!text) return "";
+    const valueClass = label.includes("신청") && isAlwaysDeadline(text) ? ` class="deadline-always"` : "";
     return `
       <div class="detail-highlight">
         <span>${escapeHtml(label)}</span>
-        <strong>${escapeHtml(value || "공고 확인")}</strong>
+        <strong${valueClass}>${escapeHtml(text)}</strong>
       </div>
     `;
+  }
+
+  function detailGrid(rows) {
+    const content = rows.filter(Boolean).join("");
+    return content ? `<dl class="detail-grid">${content}</dl>` : "";
   }
 
   function detailShareActions(policy) {
@@ -68,9 +116,52 @@
     const text = policy?.summary || "지원금 올데이에서 정책 정보를 확인해 보세요.";
     return `
       <div class="detail-share" aria-label="정책 공유">
-        <button class="ghost-button share-button" type="button" data-share-policy data-share-title="${escapeHtml(title)}" data-share-text="${escapeHtml(text)}">공유하기</button>
-        <button class="ghost-button copy-button" type="button" data-copy-link>링크복사</button>
+        <button class="ghost-button share-button" type="button" data-share-policy data-share-title="${escapeHtml(title)}" data-share-text="${escapeHtml(text)}">카카오톡 공유</button>
+        <button class="ghost-button copy-button" type="button" data-copy-link>링크 복사</button>
       </div>
+    `;
+  }
+
+  function detailTags(tags) {
+    const visibleTags = uniqueItems(tags)
+      .flatMap((tag) => String(tag).split(/[,#]/))
+      .map((tag) => normalizeText(tag, ""))
+      .filter((tag) => tag && tag.length <= 18)
+      .slice(0, 7);
+    if (!visibleTags.length) return "";
+    return `
+      <div class="detail-tags" aria-label="정책 키워드">
+        ${visibleTags.map((tag) => `<span>#${escapeHtml(tag)}</span>`).join("")}
+      </div>
+    `;
+  }
+
+  function detailGuide(policy, sourceUrl) {
+    const applyText = sourceUrl
+      ? "신청하기 버튼을 누르면 해당 기관의 공식 안내 또는 신청 페이지로 이동합니다."
+      : "신청 전 관할 기관의 최신 공고와 접수 가능 여부를 먼저 확인하세요.";
+    const summary = compactText(policy.summary, 360, "정책의 주요 조건과 신청 방법을 확인할 수 있습니다.");
+    const benefit = compactText(policy.maxBenefit, 150, "기관 문의");
+    const target = compactText(policy.target, 220, "공고 확인");
+    return `
+      <section class="detail-section detail-guide">
+        <h2>이 정책에서 확인할 내용</h2>
+        <p class="detail-lead">${escapeHtml(summary)}</p>
+        <ul class="detail-list">
+          <li>
+            <strong>받을 수 있는 혜택</strong>
+            <span>${escapeHtml(benefit)}</span>
+          </li>
+          <li>
+            <strong>대상 조건</strong>
+            <span>${escapeHtml(target)}</span>
+          </li>
+          <li>
+            <strong>신청 안내</strong>
+            <span>${escapeHtml(applyText)}</span>
+          </li>
+        </ul>
+      </section>
     `;
   }
 
@@ -83,16 +174,29 @@
       ? `<a class="primary-button" href="${sourceUrl}" target="_blank" rel="noopener">신청하기</a>`
       : `<button class="primary-button" type="button" data-apply>신청하기</button>`;
     const tags = Array.isArray(policy.tags) ? policy.tags : [];
+    const title = normalizeText(policy.title, "정책 정보");
+    const type = normalizeText(policy.type, "복지정책");
+    const summary = compactText(policy.summary, 420, "정책의 주요 내용을 확인하세요.");
+    const institution = normalizeText(policy.institution, "관할 기관");
+    const deadline = normalizeDeadline(policy.deadline);
+    const target = compactText(policy.target, 260, "공고 확인");
+    const method = normalizeText(policy.method, "기관 안내 확인");
+    const region = normalizeText(policy.region, "전국");
+    const income = compactText(policy.income, 180, "공고 확인");
+    const maxBenefit = normalizeText(policy.maxBenefit, "기관 문의");
+    const policyTags = [...tags, region, type].filter(Boolean);
 
-    document.title = `${policy.title} - 지원금 올데이`;
+    document.title = `${title} - 지원금 올데이`;
     detail.innerHTML = `
       <div class="detail-head">
         <div class="meta-row">
-          <span class="badge ${badgeClass(policy.type)}">${escapeHtml(policy.type)}</span>
-          <span class="badge deadline">${escapeHtml(daysLeft(policy.deadline))}</span>
+          <span class="badge ${badgeClass(type)}">${escapeHtml(type)}</span>
+          ${deadlineBadge(policy.deadline)}
+          <span class="badge neutral">${escapeHtml(region)}</span>
         </div>
-        <h1>${escapeHtml(policy.title)}</h1>
-        <p>${escapeHtml(policy.summary)}</p>
+        <h1>${escapeHtml(title)}</h1>
+        <p>${escapeHtml(summary)}</p>
+        ${detailTags(policyTags)}
         <div class="detail-actions">
           ${sourceAction}
           <a class="ghost-button" href="category.html">목록 보기</a>
@@ -102,43 +206,44 @@
 
       <aside class="benefit-summary">
         <span>혜택 요약</span>
-        <strong>${escapeHtml(policy.maxBenefit || "기관 문의")}</strong>
-        <p>내가 지원 받을 수 있는 최대 혜택이에요</p>
+        <strong>${escapeHtml(maxBenefit)}</strong>
+        <p>신청 전 실제 지급 조건을 공식 안내에서 확인하세요.</p>
       </aside>
 
       <section class="detail-section detail-overview">
         <h2>한눈에 보기</h2>
         <div class="detail-highlights">
-          ${detailHighlight("지원기관", policy.institution)}
-          ${detailHighlight("신청기간", policy.deadline)}
-          ${detailHighlight("지원대상", policy.target)}
-          ${detailHighlight("신청방법", policy.method)}
+          ${detailHighlight("지원기관", institution)}
+          ${detailHighlight("신청기간", deadline)}
+          ${detailHighlight("지원대상", target)}
+          ${detailHighlight("신청방법", method)}
         </div>
       </section>
 
+      ${detailGuide(policy, sourceUrl)}
+
       <section class="detail-section">
-        <h2>사업내용</h2>
-        <dl class="detail-grid">
-          ${detailRow("지원기관", policy.institution)}
-          ${detailRow("신청 마감일", policy.deadline)}
-          ${detailRow("지원 형태", policy.type)}
-          ${detailRow("지원 방법", policy.method)}
-        </dl>
+        <h2>상세 정보</h2>
+        ${detailGrid([
+          detailRow("지역", region),
+          detailRow("지원 분야", type),
+          detailRow("신청 방법", method),
+          detailRow("소득 기준", income),
+        ])}
       </section>
 
       <section class="detail-section">
-        <h2>지원대상</h2>
-        <dl class="detail-grid">
-          ${detailRow("지원대상", policy.target)}
-          ${detailRow("대상 거주지", policy.region)}
-          ${detailRow("소득 제한", policy.income)}
-          ${detailRow("기타 사항", tags.join(", "))}
-        </dl>
+        <h2>대상 조건</h2>
+        ${detailGrid([
+          detailRow("지원대상", target),
+          detailRow("거주지", region),
+          detailRow("추가 키워드", uniqueItems(tags).join(", ")),
+        ])}
       </section>
 
       <section class="detail-section">
-        <h2>접수 방법 및 상세 설명</h2>
-        <p>${escapeHtml(policy.summary)} 신청 전에는 관할 기관 공고와 실제 신청 페이지의 최신 조건, 제출 서류, 접수 가능 시간을 함께 확인해야 합니다.</p>
+        <h2>신청 전 확인</h2>
+        <p>${escapeHtml(summary)} 신청 전에는 ${escapeHtml(institution)}의 최신 공고에서 제출 서류, 접수 가능 시간, 세부 자격을 함께 확인해야 합니다.</p>
       </section>
     `;
 

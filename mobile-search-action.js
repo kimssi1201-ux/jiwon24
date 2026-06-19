@@ -6,14 +6,8 @@
     const style = document.createElement("style");
     style.id = "mobile-search-action-style";
     style.textContent = `
-      .mobile-header-search-action {
-        display: none;
-      }
-
-      .mobile-search-panel {
-        display: none;
-      }
-
+      .mobile-header-search-action { display: none; }
+      .mobile-search-panel { display: none; }
       @media (max-width: 759px) {
         .mobile-header-search-action {
           position: absolute;
@@ -29,7 +23,6 @@
           background: transparent;
           color: transparent;
         }
-
         .mobile-search-panel {
           position: fixed;
           left: 14px;
@@ -37,6 +30,7 @@
           top: 64px;
           z-index: 75;
           min-height: 50px;
+          display: none;
           align-items: center;
           gap: 8px;
           border: 1px solid #d8dee8;
@@ -45,11 +39,7 @@
           padding: 7px 8px 7px 14px;
           box-shadow: 0 12px 30px rgba(15, 23, 42, 0.16);
         }
-
-        body[data-page="category"].mobile-search-open .mobile-search-panel {
-          display: flex;
-        }
-
+        body[data-page="category"].mobile-search-open .mobile-search-panel { display: flex; }
         .mobile-search-panel input {
           min-width: 0;
           flex: 1 1 auto;
@@ -59,11 +49,7 @@
           font-size: 16px;
           font-weight: 850;
         }
-
-        .mobile-search-panel input::placeholder {
-          color: #8c95a3;
-        }
-
+        .mobile-search-panel input::placeholder { color: #8c95a3; }
         .mobile-search-panel button {
           width: 42px;
           min-height: 38px;
@@ -110,18 +96,18 @@
     const label = document.createElement("label");
     label.className = "sr-only";
     label.setAttribute("for", "mobileHeaderSearchInput");
-    label.textContent = "\uC815\uCC45 \uAC80\uC0C9";
+    label.textContent = "정책 검색";
 
     const input = document.createElement("input");
     input.id = "mobileHeaderSearchInput";
     input.type = "search";
-    input.placeholder = "\uAC80\uC0C9\uC5B4\uB97C \uC785\uB825\uD558\uC138\uC694";
+    input.placeholder = "검색어를 입력하세요";
     input.autocomplete = "off";
 
     const submit = document.createElement("button");
     submit.type = "submit";
-    submit.setAttribute("aria-label", "\uAC80\uC0C9");
-    submit.textContent = "\uAC80\uC0C9";
+    submit.setAttribute("aria-label", "검색");
+    submit.textContent = "검색";
 
     panel.append(label, input, submit);
     panel.addEventListener("submit", (event) => {
@@ -147,7 +133,7 @@
     const button = document.createElement("button");
     button.type = "button";
     button.className = "mobile-header-search-action";
-    button.setAttribute("aria-label", "\uC815\uCC45 \uAC80\uC0C9 \uC5F4\uAE30");
+    button.setAttribute("aria-label", "정책 검색 열기");
     button.addEventListener("click", openMobileSearch);
     header.appendChild(button);
   }
@@ -164,7 +150,7 @@
 (() => {
   if (document.body.dataset.page !== "category") return;
   if (window.GG24_MOBILE_FILTER_UI_FIX_VERSION) return;
-  window.GG24_MOBILE_FILTER_UI_FIX_VERSION = "20260619-1";
+  window.GG24_MOBILE_FILTER_UI_FIX_VERSION = "20260619-2";
 
   function compact(value) {
     return String(value || "").trim().replace(/[·\s_-]/g, "");
@@ -255,18 +241,18 @@
     return parts.length ? parts.join(" · ") : "연령·대상 전체";
   }
 
+  function setButtonLabel(button, iconClass, label) {
+    if (!button || button.dataset.filterLabel === label) return;
+    button.dataset.filterLabel = label;
+    button.innerHTML = `<span class="summary-icon ${iconClass}"></span>${label}`;
+  }
+
   function fixFilterUi() {
     const filters = typeof readCategoryFilters === "function" ? readCategoryFilters() : {};
     const row = document.querySelector(".filter-summary-row");
     if (row) {
-      const regionButton = row.querySelector('[data-filter-sheet="regionFilter"]');
-      const targetButton = row.querySelector('[data-filter-sheet="targetFilter"]');
-      if (regionButton) {
-        regionButton.innerHTML = `<span class="summary-icon map"></span>${regionLabel(filters)}`;
-      }
-      if (targetButton) {
-        targetButton.innerHTML = `<span class="summary-icon user"></span>${audienceLabel(filters)}`;
-      }
+      setButtonLabel(row.querySelector('[data-filter-sheet="regionFilter"]'), "map", regionLabel(filters));
+      setButtonLabel(row.querySelector('[data-filter-sheet="targetFilter"]'), "user", audienceLabel(filters));
     }
 
     const title = document.querySelector(".filter-sheet-head h2");
@@ -279,9 +265,8 @@
     }
   }
 
-  fixFilterUi();
-  new MutationObserver(fixFilterUi).observe(document.body, { childList: true, subtree: true });
-  [0, 250, 700, 1500].forEach((delay) => window.setTimeout(fixFilterUi, delay));
+  document.addEventListener("click", () => window.setTimeout(fixFilterUi, 0), true);
+  [0, 250, 700, 1500, 3000].forEach((delay) => window.setTimeout(fixFilterUi, delay));
 
   if (typeof renderCategory === "function") {
     [0, 400].forEach((delay) => window.setTimeout(renderCategory, delay));

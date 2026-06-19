@@ -114,7 +114,7 @@
   }
 
   loadNews();
-  [120, 400, 900, 1800, 3200, 6000].forEach((delay) => setTimeout(() => render(), delay));
+  [120, 400, 900, 1800, 3200, 6000, 10500, 13000].forEach((delay) => setTimeout(() => render(), delay));
 
   if (list) {
     new MutationObserver(() => {

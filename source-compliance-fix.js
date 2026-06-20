@@ -85,7 +85,10 @@
     const detail = document.querySelector("#policyDetail");
     if (!detail || detail.querySelector(".detail-source")) return;
 
-    const sourceLink = detail.querySelector(".detail-actions a.primary-button[href]");
+    const actions = detail.querySelector(".detail-actions");
+    if (!actions || !detail.querySelector(".detail-section")) return;
+
+    const sourceLink = actions.querySelector("a.primary-button[href]");
     const href = safeHref(sourceLink?.getAttribute("href")) || officialFallback();
     const section = document.createElement("section");
     section.className = "detail-section detail-source";

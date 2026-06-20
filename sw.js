@@ -1,4 +1,4 @@
-const CACHE_NAME = "gov-support25-site-v143";
+const CACHE_NAME = "gov-support25-site-v144";
 const ASSETS = [
   "./",
   "./styles.css?v=10",
@@ -12,6 +12,7 @@ const ASSETS = [
   "./popular-filter-fix.css?v=2",
   "./popular-filter-fix.css?v=3",
   "./popular-filter-fix.css?v=4",
+  "./source-compliance-fix.css?v=1",
   "./home-focus.css?v=2",
   "./deadline.js?v=2",
   "./deadline.js?v=3",
@@ -54,6 +55,7 @@ const ASSETS = [
   "./search-stability-fix.js?v=1",
   "./loading-copy-fix.js?v=1",
   "./repeat-search-reset-fix.js?v=1",
+  "./source-compliance-fix.js?v=1",
   "./category-match-fix.js?v=11",
   "./category-app-style.js?v=11",
   "./category-app-style.js?v=12",
@@ -121,6 +123,8 @@ self.addEventListener("fetch", (event) => {
     url.pathname.endsWith("/search-stability-fix.js") ||
     url.pathname.endsWith("/loading-copy-fix.js") ||
     url.pathname.endsWith("/repeat-search-reset-fix.js") ||
+    url.pathname.endsWith("/source-compliance-fix.js") ||
+    url.pathname.endsWith("/source-compliance-fix.css") ||
     url.pathname.endsWith("/category-match-fix.js") ||
     url.pathname.endsWith("/category-app-style.js") ||
     url.pathname.endsWith("/agency-label-fix.js") ||

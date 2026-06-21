@@ -1,6 +1,6 @@
 (() => {
   if (window.GG24_SOURCE_COMPLIANCE_FIX_VERSION) return;
-  window.GG24_SOURCE_COMPLIANCE_FIX_VERSION = "2";
+  window.GG24_SOURCE_COMPLIANCE_FIX_VERSION = "3";
 
   const officialSources = [
     { label: "공공데이터포털", desc: "행정안전부 대한민국 공공서비스(혜택) 정보 API", url: "https://www.data.go.kr/" },
@@ -38,6 +38,240 @@
         `,
       )
       .join("");
+  }
+
+  function insertServiceMenuStyle() {
+    if (document.querySelector("#service-menu-style")) return;
+
+    const style = document.createElement("style");
+    style.id = "service-menu-style";
+    style.textContent = `
+      .service-menu-button {
+        width: 44px;
+        height: 44px;
+        border: 0;
+        border-radius: 999px;
+        background: transparent;
+        color: #111827;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 4px;
+        flex: 0 0 auto;
+        cursor: pointer;
+      }
+
+      .service-menu-button span {
+        width: 5px;
+        height: 5px;
+        border-radius: 999px;
+        background: currentColor;
+        display: block;
+      }
+
+      .service-menu-button:focus-visible {
+        outline: 3px solid rgba(37, 99, 235, 0.25);
+        outline-offset: 2px;
+      }
+
+      .service-menu-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 120;
+        display: none;
+        align-items: flex-start;
+        justify-content: flex-end;
+        padding: 18px;
+        background: rgba(15, 23, 42, 0.34);
+      }
+
+      body.service-menu-open {
+        overflow: hidden;
+      }
+
+      body.service-menu-open .service-menu-backdrop {
+        display: flex;
+      }
+
+      .service-menu-panel {
+        width: min(380px, calc(100vw - 32px));
+        margin-top: 64px;
+        border: 1px solid rgba(148, 163, 184, 0.28);
+        border-radius: 22px;
+        background: #ffffff;
+        box-shadow: 0 24px 70px rgba(15, 23, 42, 0.22);
+        padding: 20px;
+        color: #111827;
+      }
+
+      .service-menu-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 14px;
+      }
+
+      .service-menu-head strong {
+        font-size: 21px;
+        line-height: 1.25;
+        letter-spacing: 0;
+      }
+
+      .service-menu-close {
+        width: 40px;
+        height: 40px;
+        border: 1px solid #e5e7eb;
+        border-radius: 999px;
+        background: #ffffff;
+        color: #111827;
+        font-size: 25px;
+        line-height: 1;
+        cursor: pointer;
+      }
+
+      .service-menu-copy {
+        margin: 0 0 14px;
+        color: #4b5563;
+        font-size: 15px;
+        line-height: 1.65;
+      }
+
+      .service-menu-copy strong {
+        display: block;
+        color: #111827;
+        font-size: 16px;
+        margin-bottom: 4px;
+      }
+
+      .service-menu-warning {
+        margin: 0 0 16px;
+        border-radius: 14px;
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        padding: 12px;
+        color: #374151;
+        font-size: 14px;
+        line-height: 1.55;
+      }
+
+      .service-menu-links {
+        display: grid;
+        gap: 8px;
+      }
+
+      .service-menu-links a {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 44px;
+        border: 1px solid #e5e7eb;
+        border-radius: 13px;
+        padding: 0 13px;
+        color: #111827;
+        text-decoration: none;
+        font-weight: 800;
+        font-size: 14px;
+        background: #ffffff;
+      }
+
+      .service-menu-links a::after {
+        content: ">";
+        color: #94a3b8;
+        font-weight: 900;
+      }
+
+      @media (max-width: 759px) {
+        body[data-page="category"] .header-inner::after {
+          content: none !important;
+          display: none !important;
+        }
+
+        .service-menu-button {
+          position: absolute;
+          right: 14px;
+          top: 50%;
+          transform: translateY(-50%);
+          z-index: 4;
+        }
+
+        .service-menu-backdrop {
+          align-items: flex-end;
+          padding: 0;
+        }
+
+        .service-menu-panel {
+          width: 100%;
+          max-height: min(78vh, 620px);
+          overflow: auto;
+          margin: 0;
+          border-radius: 24px 24px 0 0;
+          padding: 22px 20px calc(22px + env(safe-area-inset-bottom));
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function insertServiceMenu() {
+    const header = document.querySelector(".header-inner");
+    if (!header || document.querySelector(".service-menu-button")) return;
+
+    insertServiceMenuStyle();
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "service-menu-button";
+    button.setAttribute("aria-label", "서비스 안내 열기");
+    button.setAttribute("aria-haspopup", "dialog");
+    button.setAttribute("aria-expanded", "false");
+    button.innerHTML = "<span></span><span></span><span></span>";
+
+    const backdrop = document.createElement("div");
+    backdrop.className = "service-menu-backdrop";
+    backdrop.setAttribute("role", "dialog");
+    backdrop.setAttribute("aria-modal", "true");
+    backdrop.setAttribute("aria-label", "서비스 안내");
+    backdrop.innerHTML = `
+      <div class="service-menu-panel">
+        <div class="service-menu-head">
+          <strong>서비스 안내</strong>
+          <button type="button" class="service-menu-close" aria-label="서비스 안내 닫기">×</button>
+        </div>
+        <p class="service-menu-copy"><strong>지원금 올데이는 민간 정보 서비스입니다.</strong>정부기관 공식 앱이 아니며, 정책 정보를 한곳에서 보기 쉽게 정리해 제공합니다.</p>
+        <p class="service-menu-warning">정책 정보는 공개된 공식 출처를 바탕으로 정리합니다. 실제 신청 전에는 관할 기관의 최신 공고에서 자격, 서류, 기간을 반드시 확인하세요.</p>
+        <div class="service-menu-links">
+          <a href="https://www.data.go.kr/" target="_blank" rel="noopener noreferrer">공공데이터포털</a>
+          <a href="https://www.gov.kr/" target="_blank" rel="noopener noreferrer">정부24·보조금24</a>
+          <a href="https://www.korea.kr/" target="_blank" rel="noopener noreferrer">정책브리핑</a>
+          <a href="about.html">회사소개</a>
+          <a href="terms.html">이용약관</a>
+          <a href="privacy.html">개인정보처리방침</a>
+        </div>
+      </div>
+    `;
+
+    const closeMenu = () => {
+      document.body.classList.remove("service-menu-open");
+      button.setAttribute("aria-expanded", "false");
+    };
+    const openMenu = () => {
+      document.body.classList.add("service-menu-open");
+      button.setAttribute("aria-expanded", "true");
+      backdrop.querySelector(".service-menu-close")?.focus();
+    };
+
+    button.addEventListener("click", openMenu);
+    backdrop.addEventListener("click", (event) => {
+      if (event.target === backdrop || event.target.closest(".service-menu-close")) closeMenu();
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeMenu();
+    });
+
+    header.appendChild(button);
+    document.body.appendChild(backdrop);
   }
 
   function insertGlobalNotice() {
@@ -121,6 +355,7 @@
   }
 
   function apply() {
+    insertServiceMenu();
     insertGlobalNotice();
     insertFooterSources();
     insertCardSources();

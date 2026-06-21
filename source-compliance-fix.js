@@ -1,11 +1,11 @@
 (() => {
   if (window.GG24_SOURCE_COMPLIANCE_FIX_VERSION) return;
-  window.GG24_SOURCE_COMPLIANCE_FIX_VERSION = "1";
+  window.GG24_SOURCE_COMPLIANCE_FIX_VERSION = "2";
 
   const officialSources = [
-    { label: "정부24", url: "https://www.gov.kr/" },
-    { label: "공공데이터포털", url: "https://www.data.go.kr/" },
-    { label: "정책브리핑", url: "https://www.korea.kr/" },
+    { label: "공공데이터포털", desc: "행정안전부 대한민국 공공서비스(혜택) 정보 API", url: "https://www.data.go.kr/" },
+    { label: "정부24·보조금24", desc: "정책별 공식 원문 및 신청 안내", url: "https://www.gov.kr/" },
+    { label: "정책브리핑", desc: "정부 보도자료 및 정책 뉴스", url: "https://www.korea.kr/" },
   ];
 
   function safeHref(value) {
@@ -23,8 +23,21 @@
 
   function sourceLinksHtml() {
     return officialSources
-      .map((source) => `<a href="${source.url}" target="_blank" rel="noopener">${source.label}</a>`)
+      .map((source) => `<a href="${source.url}" target="_blank" rel="noopener noreferrer">${source.label}</a>`)
       .join(" · ");
+  }
+
+  function sourceListHtml() {
+    return officialSources
+      .map(
+        (source) => `
+          <li>
+            <a href="${source.url}" target="_blank" rel="noopener noreferrer">${source.label}</a>
+            <span>${source.desc}</span>
+          </li>
+        `,
+      )
+      .join("");
   }
 
   function insertGlobalNotice() {
@@ -36,8 +49,9 @@
     notice.className = "source-notice";
     notice.innerHTML = `
       <strong>공식 출처 안내</strong>
-      <p>지원금 올데이는 정부기관 공식 앱이 아닌 민간 정보 서비스입니다. 정책 정보는 공공데이터포털의 행정안전부 공공서비스 정보, 정부24 공식 원문, 정책브리핑 등 공개 출처를 바탕으로 정리합니다. 신청 전 반드시 해당 기관의 공식 공고와 신청 조건을 확인하세요.</p>
-      <div>${sourceLinksHtml()}</div>
+      <p>지원금 올데이는 정부기관 공식 앱이 아닌 민간 정보 서비스입니다. 이 서비스에서 사용하는 정책 정보 출처는 아래 공개·공식 출처이며, 각 정책 상세 화면에서 가능한 경우 해당 기관의 원문 링크를 함께 제공합니다.</p>
+      <ul>${sourceListHtml()}</ul>
+      <p class="source-notice-caution">신청 전에는 반드시 원문 페이지와 관할 기관의 최신 공고에서 신청 자격, 제출 서류, 접수 기간을 다시 확인하세요.</p>
     `;
     target.insertBefore(notice, target.firstChild);
   }
@@ -48,7 +62,7 @@
 
     const paragraph = document.createElement("p");
     paragraph.className = "official-source-links";
-    paragraph.innerHTML = `공식 출처: ${sourceLinksHtml()}`;
+    paragraph.innerHTML = `공식 출처: ${sourceLinksHtml()} · 각 정책 상세 화면의 관할 기관 원문 링크`;
     footer.appendChild(paragraph);
   }
 
@@ -67,7 +81,7 @@
       const href = safeHref(apply?.getAttribute("href")) || officialFallback();
       const row = document.createElement("div");
       row.className = "source-row";
-      row.innerHTML = `<span>출처: ${cardInstitution(card)}</span><a href="${href}" target="_blank" rel="noopener">공식 원문</a>`;
+      row.innerHTML = `<span>데이터 출처: 공공데이터포털</span><span>원문: ${cardInstitution(card)}</span><a href="${href}" target="_blank" rel="noopener noreferrer">공식 원문</a>`;
 
       if (mini) mini.insertAdjacentElement("afterend", row);
       else card.querySelector(".policy-body")?.appendChild(row);
@@ -94,8 +108,8 @@
     section.className = "detail-section detail-source";
     section.innerHTML = `
       <h2>공식 출처</h2>
-      <p>이 정책 정보는 ${detailInstitution()}의 공식 안내와 공공데이터포털 제공 정보를 바탕으로 정리했습니다. 지원금 올데이는 정부기관 공식 앱이 아니며 신청, 심사, 지급 권한이 없습니다.</p>
-      <a class="ghost-button source-official-link" href="${href}" target="_blank" rel="noopener">공식 원문 확인</a>
+      <p>이 정책 정보는 공공데이터포털의 행정안전부 대한민국 공공서비스(혜택) 정보와 ${detailInstitution()}의 공식 안내를 바탕으로 정리했습니다. 지원금 올데이는 정부기관 공식 앱이 아니며 신청, 심사, 지급, 대출 실행 권한이 없습니다.</p>
+      <a class="ghost-button source-official-link" href="${href}" target="_blank" rel="noopener noreferrer">관할 기관 공식 원문 확인</a>
       <div class="source-links">${sourceLinksHtml()}</div>
     `;
 

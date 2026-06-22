@@ -265,3 +265,22 @@
   setActiveTabs();
   renderOfficialPage();
 })();
+
+(() => {
+  if (window.GG24_API_SOURCE_NOTICE_LOADER_VERSION) return;
+  window.GG24_API_SOURCE_NOTICE_LOADER_VERSION = "1";
+
+  function loadApiSourceNotice() {
+    if (document.querySelector('script[src*="api-source-notice.js"]')) return;
+    const script = document.createElement("script");
+    script.src = "api-source-notice.js?v=1";
+    script.defer = true;
+    document.body.appendChild(script);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", loadApiSourceNotice, { once: true });
+  } else {
+    loadApiSourceNotice();
+  }
+})();

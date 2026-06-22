@@ -367,3 +367,67 @@
   observer.observe(document.body, { childList: true, subtree: true });
   [250, 800, 1600, 3200].forEach((delay) => setTimeout(apply, delay));
 })();
+
+(() => {
+  const disclaimerText =
+    "본 사이트에서 제공하는 정보는 참고용이며, 정확한 내용은 해당 기관에서 확인하시기 바랍니다. 해당 사이트에서 제공되는 정보는 신뢰할 만한 자료 및 정보로부터 얻어졌으나, 그 정확성이나 완전성을 보장할 수 없으며 시간이 경과함에 따라 변경될 수 있습니다. 오류, 누락에 대하여 당사는 책임지지 않으며 그 결과에 대해 법적인 책임을 지지 않습니다.";
+  const shortDetailText =
+    "본 정보는 참고용입니다. 정확한 신청 조건, 기간, 제출 서류, 지급 여부는 반드시 해당 기관의 최신 공고와 공식 안내에서 확인하시기 바랍니다.";
+
+  function ensureStyle() {
+    if (document.querySelector("#legal-disclaimer-style")) return;
+    const style = document.createElement("style");
+    style.id = "legal-disclaimer-style";
+    style.textContent = `
+      .legal-disclaimer,
+      .detail-legal-disclaimer {
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        background: #f8fafc;
+        color: #4b5563;
+        font-size: 12px;
+        line-height: 1.65;
+        padding: 12px 14px;
+      }
+
+      .legal-disclaimer {
+        max-width: 920px;
+        margin-top: 12px;
+      }
+
+      .detail-legal-disclaimer {
+        margin: 12px 0 0;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function applyLegalDisclaimer() {
+    ensureStyle();
+
+    const footer = document.querySelector(".site-footer");
+    if (footer && !footer.querySelector(".legal-disclaimer")) {
+      const disclaimer = document.createElement("p");
+      disclaimer.className = "legal-disclaimer";
+      disclaimer.textContent = disclaimerText;
+      footer.appendChild(disclaimer);
+    }
+
+    const detail = document.querySelector("#policyDetail");
+    if (detail && !detail.querySelector(".detail-legal-disclaimer")) {
+      const sourceSection = detail.querySelector(".detail-source");
+      const target = sourceSection || detail.querySelector(".detail-section");
+      if (target) {
+        const detailNotice = document.createElement("p");
+        detailNotice.className = "detail-legal-disclaimer";
+        detailNotice.textContent = shortDetailText;
+        target.insertAdjacentElement(sourceSection ? "afterend" : "beforebegin", detailNotice);
+      }
+    }
+  }
+
+  applyLegalDisclaimer();
+  const observer = new MutationObserver(applyLegalDisclaimer);
+  observer.observe(document.body, { childList: true, subtree: true });
+  [250, 800, 1600, 3200].forEach((delay) => setTimeout(applyLegalDisclaimer, delay));
+})();

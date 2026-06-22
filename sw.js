@@ -1,4 +1,4 @@
-const CACHE_NAME = "gov-support25-site-v144";
+const CACHE_NAME = "gov-support25-site-v145";
 const ASSETS = [
   "./",
   "./styles.css?v=10",
@@ -56,6 +56,7 @@ const ASSETS = [
   "./loading-copy-fix.js?v=1",
   "./repeat-search-reset-fix.js?v=1",
   "./source-compliance-fix.js?v=1",
+  "./source-compliance-fix.js?v=3",
   "./category-match-fix.js?v=11",
   "./category-app-style.js?v=11",
   "./category-app-style.js?v=12",

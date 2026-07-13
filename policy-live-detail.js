@@ -316,7 +316,7 @@
 
       for (let index = 0; index < chunkStarts.length; index += 2) {
         const batch = chunkStarts.slice(index, index + 2).map((startPage) =>
-          fetch(`/api/policies?startPage=${startPage}&pages=5&perPage=500&maxItems=2500`, {
+          fetch(`/api/policies?startPage=${startPage}&pages=5&perPage=300&maxItems=1500`, {
             headers: { Accept: "application/json" },
             cache: "no-store",
           })

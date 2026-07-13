@@ -96,7 +96,19 @@ function inferType(record) {
 }
 
 function inferRegion(record) {
-  const source = `${value(record, "소관기관명")} ${value(record, "접수기관")}`;
+  const explicitRegionKeys = [
+    "지역",
+    "지역명",
+    "서비스지역",
+    "지원지역",
+    "사업지역",
+    "대상지역",
+    "거주지역",
+    "신청지역",
+    "제공지역",
+  ];
+  const explicitRegion = explicitRegionKeys.map((key) => value(record, key)).filter(Boolean).join(" ");
+  const source = `${explicitRegion} ${value(record, "소관기관명")} ${value(record, "접수기관")}`;
   return regionPatterns.find(([, pattern]) => pattern.test(source))?.[0] || "전국";
 }
 
@@ -190,22 +202,49 @@ function inferIncome(record) {
 function normalizeDeadline(text) {
   const deadline = value({ text }, "text", "상시 또는 기관 문의");
   if (/상시/.test(deadline)) return "상시";
-  const date = deadline.match(/\d{4}[-.]\d{1,2}[-.]\d{1,2}/);
-  if (!date) return clip(deadline, 24);
-  const [year, month, day] = date[0].split(/[-.]/);
+  const dates = [...deadline.matchAll(/(\d{4})\s*(?:년|[-./])\s*(\d{1,2})\s*(?:월|[-./])\s*(\d{1,2})(?:\s*일)?/g)];
+  if (!dates.length) return clip(deadline, 24);
+  const [, year, month, day] = dates[dates.length - 1];
   return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
 }
 
 function safeUrl(rawUrl, serviceId) {
   try {
     const url = new URL(value({ rawUrl }, "rawUrl"));
-    if (url.protocol === "http:" || url.protocol === "https:") return url.href;
+    const host = url.hostname.toLowerCase();
+    const officialHost =
+      host === "gov.kr" ||
+      host.endsWith(".gov.kr") ||
+      host === "go.kr" ||
+      host.endsWith(".go.kr") ||
+      host === "korea.kr" ||
+      host.endsWith(".korea.kr") ||
+      host === "data.go.kr" ||
+      host.endsWith(".data.go.kr") ||
+      host === "or.kr" ||
+      host.endsWith(".or.kr") ||
+      host === "ac.kr" ||
+      host.endsWith(".ac.kr");
+    if (url.protocol === "https:" && officialHost && !url.username && !url.password) return url.href;
   } catch {}
-  return serviceId ? `https://www.gov.kr/portal/rcvfvrSvc/dtlEx/${encodeURIComponent(serviceId)}` : "";
+  return serviceId && !String(serviceId).startsWith("fallback-")
+    ? `https://www.gov.kr/portal/rcvfvrSvc/dtlEx/${encodeURIComponent(serviceId)}`
+    : "";
+}
+
+function fallbackServiceId(record) {
+  const source = [
+    value(record, "서비스명"),
+    value(record, "소관기관명"),
+    value(record, "상세조회URL"),
+  ].join("|");
+  let hash = 0;
+  for (const character of source) hash = (hash * 31 + character.charCodeAt(0)) | 0;
+  return `fallback-${Math.abs(hash).toString(36)}`;
 }
 
 function policyFromRecord(record, index) {
-  const serviceId = value(record, "서비스ID", String(index + 1));
+  const serviceId = value(record, "서비스ID", fallbackServiceId(record));
   const type = inferType(record);
   const region = inferRegion(record);
   const summary = value(record, "서비스목적요약", value(record, "지원내용", "공식 공고에서 상세 조건을 확인하세요."));
@@ -240,7 +279,7 @@ function policyFromRecord(record, index) {
 function dedupe(policies) {
   const seen = new Set();
   return policies.filter((policy) => {
-    const key = `${policy.title}-${policy.institution}`;
+    const key = policy.id || `${policy.title}-${policy.institution}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
@@ -362,7 +401,7 @@ function regionApiKeyword(region) {
     부산: "부산",
     대구: "대구",
     인천: "인천",
-    광주: "광주광역시",
+    광주: "광주",
     대전: "대전",
     울산: "울산",
     세종: "세종",
@@ -451,11 +490,11 @@ async function fetchPolicyById(serviceKey, requestedId) {
     // Some upstream mirrors may not support cond filters. Fall back to a bounded page scan.
   }
 
-  const firstPage = await fetchFirstPage(serviceKey, 1000);
+  const firstPage = await fetchFirstPage(serviceKey, 300);
   const first = firstPage.body;
   const actualPerPage = firstPage.perPage;
   const totalCount = Number(first.totalCount || first.matchCount || 0);
-  const totalPages = Math.max(1, Math.ceil(totalCount / actualPerPage));
+  const totalPages = Math.min(12, Math.max(1, Math.ceil(totalCount / actualPerPage)));
   const firstRecords = Array.isArray(first.data) ? first.data : [];
 
   for (const [index, record] of firstRecords.entries()) {
@@ -481,10 +520,10 @@ export async function onRequestGet({ request, env }) {
 
   const url = new URL(request.url);
   const requestedId = (url.searchParams.get("id") || "").trim();
-  const pages = numberParam(url.searchParams, "pages", 8, 1, 40);
-  const perPage = numberParam(url.searchParams, "perPage", 300, 50, 1000);
-  const maxItems = numberParam(url.searchParams, "maxItems", 2400, 100, 12000);
-  const startPage = numberParam(url.searchParams, "startPage", 1, 1, 40);
+  const pages = numberParam(url.searchParams, "pages", 8, 1, 12);
+  const perPage = numberParam(url.searchParams, "perPage", 300, 50, 300);
+  const maxItems = numberParam(url.searchParams, "maxItems", 2400, 100, 4000);
+  const startPage = numberParam(url.searchParams, "startPage", 1, 1, 12);
   const requestedRegion = normalizeRegion(url.searchParams.get("region"));
 
   try {
@@ -511,15 +550,30 @@ export async function onRequestGet({ request, env }) {
       );
     }
 
-    const payload = await fetchPolicies(
+    let payload = await fetchPolicies(
       serviceKey,
       requestedRegion && requestedRegion !== "전체지역" ? Math.min(pages, 12) : pages,
-      requestedRegion && requestedRegion !== "전체지역" ? Math.min(perPage, 100) : perPage,
-      requestedRegion && requestedRegion !== "전체지역" ? 12000 : maxItems,
+      requestedRegion && requestedRegion !== "전체지역" ? Math.min(perPage, 300) : perPage,
+      requestedRegion && requestedRegion !== "전체지역" ? maxItems : maxItems,
       requestedRegion && requestedRegion !== "전체지역" ? 1 : startPage,
       requestedRegion && requestedRegion !== "전체지역" ? regionApiParams(requestedRegion) : {},
     );
     if (requestedRegion && requestedRegion !== "전체지역") {
+      const hasRegionalResult = payload.policies.some((policy) => isRequestedRegionPolicy(policy, requestedRegion));
+      if (!hasRegionalResult) {
+        const broadPayload = await fetchPolicies(
+          serviceKey,
+          Math.min(pages, 12),
+          Math.min(perPage, 300),
+          maxItems,
+          1,
+          {},
+        );
+        payload = {
+          ...broadPayload,
+          source: { ...broadPayload.source, regionFallback: true },
+        };
+      }
       payload.source.region = requestedRegion;
       payload.policies = sortRegionFirst(
         payload.policies.filter((policy) => isRequestedRegionPolicy(policy, requestedRegion)),

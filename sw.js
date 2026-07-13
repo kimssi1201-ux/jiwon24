@@ -91,7 +91,13 @@ const ASSETS = [
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
-  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)).catch(() => undefined));
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(async (cache) => {
+      const results = await Promise.allSettled([...new Set(ASSETS)].map((asset) => cache.add(asset)));
+      const failures = results.filter((result) => result.status === "rejected");
+      if (failures.length) console.warn("Some app assets could not be cached", failures.length);
+    }),
+  );
 });
 
 self.addEventListener("activate", (event) => {

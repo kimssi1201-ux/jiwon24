@@ -106,7 +106,7 @@
   }
 
   async function requestNews(days, limit) {
-    const response = await fetch(`/api/news?days=${days}&limit=${limit}&t=${Date.now()}`, {
+    const response = await fetch(`/api/news?days=${days}&limit=${limit}`, {
       headers: { Accept: "application/json" },
     });
     const payload = await response.json().catch(() => ({}));

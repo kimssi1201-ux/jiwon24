@@ -220,7 +220,7 @@
   const initialPolicies = window.GG24_DATA?.policies || [];
   render(initialPolicies);
 
-  fetch("/api/policies?pages=20&perPage=500&maxItems=10000", {
+  fetch("/api/policies?pages=12&perPage=300&maxItems=3600", {
     headers: { Accept: "application/json" },
     cache: "no-store",
   })

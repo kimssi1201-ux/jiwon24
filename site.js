@@ -536,7 +536,7 @@ async function loadLivePolicies() {
   const timeout = setTimeout(() => controller.abort(), 18000);
 
   try {
-    const response = await fetch("/api/policies?pages=6&perPage=500&maxItems=3000", {
+    const response = await fetch("/api/policies?pages=6&perPage=300&maxItems=1800", {
       headers: {
         Accept: "application/json",
       },

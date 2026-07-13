@@ -278,7 +278,7 @@
       const queryMatch =
         !query ||
         (typeof policyMatchesQuery === "function"
-          ? policyMatchesQuery(policy, filters.query)
+          ? policyMatchesQuery(policy, filters.query, filters.region)
           : policySearchText(policy).includes(query));
       return typeMatch && regionMatch && ageMatch && targetMatch && queryMatch;
     });

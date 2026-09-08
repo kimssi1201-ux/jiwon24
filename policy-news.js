@@ -4,7 +4,7 @@
   const params = new URLSearchParams(location.search);
   if (params.get("mode") !== "news") return;
 
-  window.GG24_POLICY_NEWS_FIX_VERSION = "20260619-3";
+  window.GG24_POLICY_NEWS_FIX_VERSION = "20260619-4";
 
   const list = document.querySelector("#policyList");
   const title = document.querySelector("#categoryTitle");
@@ -114,7 +114,8 @@
   }
 
   async function requestNews(days, limit) {
-    const response = await fetch(`/api/news?days=${days}&limit=${limit}`, {
+    const version = encodeURIComponent(window.GG24_POLICY_NEWS_FIX_VERSION || "news");
+    const response = await fetch(`/api/news?days=${days}&limit=${limit}&v=${version}`, {
       headers: { Accept: "application/json" },
     });
     const payload = await response.json().catch(() => ({}));

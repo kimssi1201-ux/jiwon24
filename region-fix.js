@@ -1,6 +1,8 @@
 (() => {
   if (document.body.dataset.page !== "category") return;
-  window.GG24_REGION_FIX_VERSION = "21";
+  window.GG24_REGION_FIX_VERSION = "22";
+  const LOAD_RELEASE_MS = 5000;
+  const loadStartedAt = Date.now();
 
   const regionAliases = {
     서울: ["서울", "서울특별시"],
@@ -262,7 +264,23 @@
   }
 
   function shouldKeepRegionalLoading(filters, list) {
+    if (window.GG24_CATEGORY_LOADING_RELEASED || Date.now() - loadStartedAt >= LOAD_RELEASE_MS) return false;
     return !fullPolicyLoadFinished && filters.region !== "전체지역" && filters.region !== "전국" && !hasLocalRegionResult(list, filters.region);
+  }
+
+  function shouldReleaseFocusedLoading(filters) {
+    if (window.GG24_CATEGORY_FULL_LOAD_DONE) return false;
+    if (Date.now() - loadStartedAt < LOAD_RELEASE_MS) return false;
+    return filters.region !== "전체지역" || filters.target !== "전체대상";
+  }
+
+  function releaseFocusedLoading() {
+    const filters = currentFilters();
+    if (!shouldReleaseFocusedLoading(filters)) return false;
+    fullPolicyLoadFinished = true;
+    window.GG24_CATEGORY_FULL_LOAD_DONE = true;
+    window.GG24_CATEGORY_LOADING_RELEASED = true;
+    return true;
   }
 
   filteredPolicies = function filteredPoliciesWithRegionFallback() {
@@ -297,6 +315,7 @@
   function renderMergedStaticPolicies() {
     policies = mergePolicies(policies, staticPolicies);
     const filters = currentFilters();
+    releaseFocusedLoading();
     const list = filteredPolicies();
     if (!fullPolicyLoadFinished && isFocusedFilter(filters) && (!list.length || shouldKeepRegionalLoading(filters, list))) {
       showMergedLoading();
@@ -306,6 +325,9 @@
   }
 
   renderMergedStaticPolicies();
+  setTimeout(() => {
+    if (releaseFocusedLoading() && typeof renderCategory === "function") renderCategory();
+  }, LOAD_RELEASE_MS);
   [1200, 3500, 6500].forEach((delay) => {
     setTimeout(renderMergedStaticPolicies, delay);
   });

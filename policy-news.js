@@ -4,7 +4,7 @@
   const params = new URLSearchParams(location.search);
   if (params.get("mode") !== "news") return;
 
-  window.GG24_POLICY_NEWS_FIX_VERSION = "20260619-5";
+  window.GG24_POLICY_NEWS_FIX_VERSION = "20260619-6";
 
   const list = document.querySelector("#policyList");
   const title = document.querySelector("#categoryTitle");

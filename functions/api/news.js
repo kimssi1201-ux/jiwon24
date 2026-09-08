@@ -2,10 +2,11 @@ const ENDPOINT = "https://apis.data.go.kr/1371000/policyNewsService/policyNewsLi
 const SOURCE_URL = "https://www.data.go.kr/data/15095335/openapi.do";
 const SOURCE_NAME = "문화체육관광부_정책브리핑_정책뉴스_API";
 
-const CORE_WELFARE_PATTERN =
-  /복지|사회보장|사회서비스|기초생활|생계급여|의료급여|주거급여|교육급여|저소득|차상위|한부모|취약계층|장애|보훈|돌봄|건강보험|희귀난치|희귀질환|기초연금|국민연금|자살예방|사회복지|정책서민금융|햇살론|바우처/;
+const SPECIFIC_WELFARE_PATTERN =
+  /사회보장|사회서비스|기초생활|생계급여|의료급여|주거급여|교육급여|저소득|차상위|한부모|취약계층|복지위기가구|장애인|장애(?!물)|보훈|돌봄|건강보험|희귀난치|희귀질환|기초연금|국민연금|자살예방|사회복지|정책서민금융|햇살론|바우처/;
+const GENERAL_WELFARE_PATTERN = /복지/;
 const BENEFIT_PATTERN =
-  /지원금|보조금|급여|수당|환급|감면|대출|보험료|의료비|생활비|주거비|장려금|상해보험|국가장학금|지역인재장학금|긴급구호|생필품|먹거리|보장\s*확대|처우개선|지원\s*확대/;
+  /지원금|보조금|급여|수당|환급|감면|대출|보험료|의료비|생활비|주거비|장려금|상해보험|국가장학금|지역인재장학금|긴급구호|생필품|기본소득|보장\s*확대|처우개선|지원\s*확대/;
 const TARGET_PATTERN =
   /아동|청소년|청년|대학생|노인|어르신|고령|장애인|국가유공자|보훈|소상공인|농민|농업인|어민|농어업|농촌|저소득층|신혼부부|임산부|산모|영유아|다문화|외국인|범죄피해자|피해자|노동자|근로자|군\s*복무\s*청년|취약계층/;
 const WELFARE_DEPARTMENT_PATTERN = /보건복지부|고용노동부|여성가족부|국가보훈부|질병관리청|금융위원회|중소벤처기업부/;
@@ -92,13 +93,15 @@ function parseNewsDate(raw) {
 function normalizeNews(block) {
   const id = stripHtml(firstField(block, ["NewsItemId", "newsItemId", "id"]));
   const title = stripHtml(firstField(block, ["Title", "title"]));
-  const summary = stripHtml(firstField(block, ["SubTitle1", "SubTitle2", "SubTitle3", "DataContents", "dataContents"]));
+  const subtitle = stripHtml(firstField(block, ["SubTitle1", "SubTitle2", "SubTitle3"]));
   const contents = stripHtml(firstField(block, ["DataContents", "dataContents"]));
+  const summary = subtitle || contents;
   const department = stripHtml(firstField(block, ["MinisterCode", "ministerCode"]));
   const date = parseNewsDate(firstField(block, ["ApproveDate", "approveDate", "ModifyDate", "modifyDate"]));
   const imageUrl = stripHtml(firstField(block, ["ThumbnailUrl", "thumbnailUrl", "OriginalimgUrl", "originalimgUrl"]));
   const url = stripHtml(firstField(block, ["OriginalUrl", "originalUrl"]));
-  const haystack = `${title} ${summary} ${contents} ${department}`;
+  const shortContents = contents.slice(0, 320);
+  const haystack = `${title} ${subtitle || shortContents} ${department}`;
 
   if (!title || !isWelfareNews(haystack, department)) return null;
 
@@ -115,9 +118,16 @@ function normalizeNews(block) {
 }
 
 function isWelfareNews(text, department) {
-  if (CORE_WELFARE_PATTERN.test(text)) return true;
-  if (BENEFIT_PATTERN.test(text) && TARGET_PATTERN.test(text)) return true;
-  return WELFARE_DEPARTMENT_PATTERN.test(department) && (BENEFIT_PATTERN.test(text) || TARGET_PATTERN.test(text));
+  const hasSpecificWelfare = SPECIFIC_WELFARE_PATTERN.test(text);
+  const hasGeneralWelfare = GENERAL_WELFARE_PATTERN.test(text);
+  const hasBenefit = BENEFIT_PATTERN.test(text);
+  const hasTarget = TARGET_PATTERN.test(text);
+  const hasWelfareDepartment = WELFARE_DEPARTMENT_PATTERN.test(department);
+
+  if (hasSpecificWelfare) return true;
+  if (hasBenefit && hasTarget) return true;
+  if (hasGeneralWelfare && (hasBenefit || hasTarget || hasWelfareDepartment)) return true;
+  return hasWelfareDepartment && (hasBenefit || hasTarget);
 }
 
 function parseNewsXml(xml) {

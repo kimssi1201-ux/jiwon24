@@ -1,6 +1,8 @@
 (() => {
   if (document.body.dataset.page !== "category") return;
-  window.GG24_MATCH_FIX_VERSION = "11";
+  window.GG24_MATCH_FIX_VERSION = "12";
+  const REGIONAL_LOAD_RELEASE_MS = 5000;
+  const regionalLoadStartedAt = Date.now();
 
   const directSmallBusinessPattern =
     /소상공인|소공인|전통시장|시장상인|상인회|개인사업자|자영업|가맹점|상권|점포/;
@@ -157,6 +159,7 @@
 
   function shouldHoldRegionalLoading() {
     const filters = readCategoryFilters();
+    if (window.GG24_CATEGORY_LOADING_RELEASED || Date.now() - regionalLoadStartedAt >= REGIONAL_LOAD_RELEASE_MS) return false;
     if (window.GG24_CATEGORY_FULL_LOAD_DONE) return false;
     if (filters.region === "전체지역" || filters.region === "전국") return false;
     return !filteredPolicies().some((policy) => isLocalPolicyForRegion(policy, filters.region));
@@ -262,6 +265,13 @@
   }
 
   renderCategory();
+  setTimeout(() => {
+    const filters = readCategoryFilters();
+    if (filters.region === "전체지역" || filters.region === "전국") return;
+    window.GG24_CATEGORY_LOADING_RELEASED = true;
+    window.GG24_CATEGORY_FULL_LOAD_DONE = true;
+    renderCategory();
+  }, REGIONAL_LOAD_RELEASE_MS);
   [300, 1200, 3500].forEach((delay) => setTimeout(renderCategory, delay));
   if (!window.GG24_REGION_FIX_VERSION) {
     loadPriorityChunks().catch(() => {

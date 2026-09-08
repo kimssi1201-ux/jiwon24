@@ -1,6 +1,6 @@
 (() => {
   if (window.GG24_SOURCE_COMPLIANCE_FIX_VERSION) return;
-  window.GG24_SOURCE_COMPLIANCE_FIX_VERSION = "3";
+  window.GG24_SOURCE_COMPLIANCE_FIX_VERSION = "5";
 
   const officialSources = [
     { label: "공공데이터포털", desc: "행정안전부 대한민국 공공서비스(혜택) 정보 API", url: "https://www.data.go.kr/" },
@@ -308,6 +308,7 @@
 
   function insertCardSources() {
     document.querySelectorAll(".policy-card").forEach((card) => {
+      if (card.classList.contains("official-link-card-inline")) return;
       if (card.querySelector(".source-row")) return;
 
       const mini = card.querySelector(".mini-meta");

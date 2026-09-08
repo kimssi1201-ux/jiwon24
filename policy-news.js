@@ -4,7 +4,7 @@
   const params = new URLSearchParams(location.search);
   if (params.get("mode") !== "news") return;
 
-  window.GG24_POLICY_NEWS_FIX_VERSION = "20260619-2";
+  window.GG24_POLICY_NEWS_FIX_VERSION = "20260619-3";
 
   const list = document.querySelector("#policyList");
   const title = document.querySelector("#categoryTitle");
@@ -33,7 +33,9 @@
 
   function safeUrl(value) {
     try {
-      const url = new URL(value || "", location.href);
+      const raw = String(value || "").trim();
+      if (!raw) return "";
+      const url = new URL(raw, location.href);
       if (!/^https?:$/.test(url.protocol)) return "";
       return url.href;
     } catch {
@@ -64,6 +66,11 @@
           </div>
           <h3>${titleHtml}</h3>
           <p class="policy-highlight">${escapeText(shortSummary(item))}</p>
+          ${
+            href
+              ? `<div class="source-row"><span>데이터 출처: 공공데이터포털</span><span>원문: ${escapeText(sourceLabel)}</span><a href="${escapeText(href)}" target="_blank" rel="noopener noreferrer">공식 원문</a></div>`
+              : ""
+          }
         </div>
       </article>
     `;
@@ -82,7 +89,8 @@
     const typeRow = document.querySelector(".category-hero > .filter-row[aria-label='정책 유형']");
     const summaryRow = document.querySelector(".filter-summary-row");
     const searchBox = document.querySelector(".search-box");
-    [typeRow, summaryRow, searchBox].forEach((element) => {
+    const filterSections = document.querySelectorAll(".category-hero .region-filter");
+    [typeRow, summaryRow, searchBox, ...filterSections].forEach((element) => {
       if (element) element.hidden = true;
     });
   }

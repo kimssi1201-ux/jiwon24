@@ -127,7 +127,7 @@ function isWelfareNews(text, department) {
   if (hasSpecificWelfare) return true;
   if (hasBenefit && hasTarget) return true;
   if (hasGeneralWelfare && (hasBenefit || hasTarget || hasWelfareDepartment)) return true;
-  return hasWelfareDepartment && (hasBenefit || hasTarget);
+  return hasWelfareDepartment && hasBenefit;
 }
 
 function parseNewsXml(xml) {
